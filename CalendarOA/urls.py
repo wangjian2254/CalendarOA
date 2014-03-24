@@ -6,8 +6,9 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'CalendarOA.views.home', name='home'),
-    # url(r'^CalendarOA/', include('CalendarOA.foo.urls')),
+    url(r'^$', 'rili.views.index'),
+    url(r'^CalendarOA_Flex.html$', 'rili.views.index'),
+    url(r'^ca/', include('rili.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

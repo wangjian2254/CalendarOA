@@ -14,7 +14,7 @@ class Group(models.Model):
     name = models.CharField(max_length=30, verbose_name=u'分组名称')
     color = models.CharField(max_length=10, verbose_name=u'html颜色值')
     author = models.ForeignKey(User, verbose_name=u'创建者')
-    users = models.ManyToManyField(User, related_name=u'sharedusers', verbose_name=u'分享用户')
+    users = models.ManyToManyField(User, related_name=u'group_sharedusers', verbose_name=u'分享用户')
 
 
 class Schedule(models.Model):
@@ -31,9 +31,10 @@ class Schedule(models.Model):
     time_end = models.TimeField(verbose_name=u'结束时间', null=True, blank=True)
     repeat_type = models.CharField(choices=REPEAT_TYPE,default=REPEAT_TYPE[0][0], max_length=10, verbose_name=u'重复方式')
     repeat_date = models.CommaSeparatedIntegerField(max_length=200,null=True, blank=True, verbose_name=u'重复时间',
-                                                    help_text=u'这是一个逗号分隔的数字字符串，如：‘1,2,3’,如果重复方式为周，数字代表星期数 星期一：1，星期日：7，如果重复方式为月，数字代表日子，1号：1,31号：31')
+                                                    help_text=u'这是一个逗号分隔的数字字符串，如：‘1,2,3’,如果重复方式为周，数字代表星期数 星期一：0，星期日：6，如果重复方式为月，数字代表日子，1号：1,31号：31')
     color = models.CharField(max_length=10, verbose_name=u'html颜色值',help_text=u'颜色不同可以区分缓急，可以作为日程的小分组')
-    users = models.ManyToManyField(User, related_name=u'sharedusers', verbose_name=u'参与用户')
+    users = models.ManyToManyField(User, related_name=u'schedule_sharedusers', verbose_name=u'参与用户')
+    group = models.ForeignKey(Group,verbose_name=u'隶属分组')
 
 
 
@@ -48,7 +49,7 @@ class Task(models.Model):
     desc = models.CharField(max_length=4000, verbose_name=u'备注')
     startdate = models.DateField(default=datetime.now, verbose_name=u'创建日期')
     status = models.BooleanField(default=True,verbose_name=u'完成状态')
-    users = models.ManyToManyField(User, related_name=u'sharedusers', verbose_name=u'参与用户')
+    users = models.ManyToManyField(User, related_name=u'task_sharedusers', verbose_name=u'参与用户')
 
 
 class Warning(models.Model):
