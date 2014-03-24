@@ -4,7 +4,7 @@
 
 __author__ = u'王健'
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 
 
 urlpatterns = patterns('rili',
@@ -17,6 +17,8 @@ urlpatterns = patterns('rili',
     url(r'^login', 'views.login'),
     url(r'^logout', 'views.logout'),
     url(r'^saveUser', 'views.saveUser'),
+    url(r'^updateSchedule', 'views.updateSchedule'),
+    url(r'^getScheduleByDate', 'views.getScheduleByDate'),
 
 
 )
