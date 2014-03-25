@@ -88,6 +88,13 @@ def saveUser(request):
         user.username = request.REQUEST.get('username', '')
         if not user.username or User.objects.filter(username=user.username).count() > 0:
             return getResult(False, u'用户名已经存在', None)
+        user.save()
+        if 0==Group.objects.filter(author = user).count():
+            g = Group()
+            g.author = user
+            g.color = 0x339933
+            g.name = u'%s的日程'%request.REQUEST.get('truename', user.username)
+            g.save()
     is_active = request.REQUEST.get('isaction', '')
     if is_active:
         if is_active == 'true':
@@ -124,6 +131,24 @@ def currentUser(request):
                                     'ismanager': request.user.is_staff, 'isaction': request.user.is_active,
                                     'id': request.user.pk})
 
+
+
+
+@client_login_required
+def getMyGroup(request):
+    user = request.user
+
+    groupquery = Group.objects.filter(Q(author=user)|Q(users=user)).order_by('id')
+    l = []
+    for group in groupquery:
+        l.append({'id':group.pk, 'name':group.name, 'color':group.color, 'userlist': [{'username':u.username,'nickname':u.first_name} for u in group.users.all()]})
+    if len(l) == 0:
+        g = Group()
+        g.author = user
+        g.color = 0x339933
+        g.name = u'%s的日程'%user.first_name
+        g.save()
+    return getResult(True,'',l)
 
 
 @client_login_required
