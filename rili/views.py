@@ -142,10 +142,11 @@ def getScheduleByDate(request):
     date = request.REQUEST.get('date', '')
     if date:
         user = request.user
+        groupquery = Group.objects.filter(Q(author=user)|Q(users=user))
         date = datetime.datetime.strptime(date, "%Y%m%d")
         result = []
-        for schedule in Schedule.objects.filter(
-                        (Q(startdate__lte=date), Q(enddate__gte=date)) | (Q(startdate__lte=date), Q(enddate=None))):
+        for schedule in Schedule.objects.filter(Q(author=user)|Q(users=user)|Q(group__in=groupquery)).filter(
+                        Q(startdate__lte=date,enddate__gte=date) | Q(startdate__lte=date,enddate=None)):
             if not (not (schedule.repeat_type == REPEAT_TYPE[0][0]) and not (
                             schedule.repeat_type == REPEAT_TYPE[1][0] and str(
                             date.weekday()) in schedule.repeat_date.split(
