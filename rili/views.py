@@ -67,9 +67,11 @@ def login(request):
 
 
 def regUser(request):
-    result = saveUser(request)
+    result = saveUserFun(request)
     if result.get('success'):
-        auth_login(request, User.objects.get(pk=result.get('result').get('pk')))
+        form=AuthenticationForm(data=request.POST)
+        form.is_valid()
+        auth_login(request, form.get_user())
 
         if request.session.test_cookie_worked():
             request.session.delete_test_cookie()
@@ -79,6 +81,9 @@ def regUser(request):
 
 
 def saveUser(request):
+    result = saveUser(request)
+    return  getResult(True,'',result.get('result'))
+def saveUserFun(request):
     id = request.REQUEST.get('id', '')
     if id:
         user = User.objects.get(pk=id)
@@ -111,8 +116,8 @@ def saveUser(request):
     if request.REQUEST.has_key('password'):
         user.set_password(request.REQUEST.get('password'))
     user.save()
-    return getResult(True, '', {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
-                                'isaction': user.is_active, 'id': user.pk})
+    return {'success':True, 'message':'', 'result':{'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
+                                'isaction': user.is_active, 'id': user.pk}}
 
 
 def allmanager(request):
@@ -123,6 +128,11 @@ def allmanager(request):
                   'id': u.pk})
 
     return getResult(True, '', l)
+
+@client_login_required
+def getContacts(request):
+    return getResult(True,'',[{'username':u.username,'nickname':u.first_name} for u in request.user.contacts_list.all()])
+
 
 @client_login_required
 def currentUser(request):
@@ -141,7 +151,7 @@ def getMyGroup(request):
     groupquery = Group.objects.filter(Q(author=user)|Q(users=user)).order_by('id')
     l = []
     for group in groupquery:
-        l.append({'id':group.pk, 'name':group.name, 'color':group.color, 'userlist': [{'username':u.username,'nickname':u.first_name} for u in group.users.all()]})
+        l.append({'id':group.pk, 'name':group.name, 'author':group.author_id,  'color':group.color, 'userlist': [{'username':u.username,'nickname':u.first_name} for u in group.users.all()]})
     if len(l) == 0:
         g = Group()
         g.author = user
@@ -181,12 +191,15 @@ def getScheduleByDate(request):
                             '%m%d') == schedule.startdate.strftime('%m%d')):
                 s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'group':schedule.group_id,
                      'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
-                     'time_start': schedule.time_start.strftime('%H:%M'),
-                     'time_end': schedule.time_start.strftime('%H:%M'), 'repeat_type': schedule.repeat_type,
+                      'repeat_type': schedule.repeat_type,
                      'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
                      'users': [{'username': u.username, 'nickname': u.first_name} for u in schedule.users.all()]}
                 if schedule.enddate:
                     s['enddate'] = schedule.enddate.strftime('%Y%m%d')
+                if schedule.time_start:
+                    s['time_start'] = schedule.time_start.strftime('%H%M')
+                if schedule.time_end:
+                    s['time_end'] = schedule.time_end.strftime('%H%M')
                 result.append(s)
         return getResult(True, '', result)
     else:
@@ -203,10 +216,10 @@ def updateSchedule(request):
     time_start = request.REQUEST.get('time_start','')
     time_end = request.REQUEST.get('time_end','')
     repeat_type = request.REQUEST.get('repeat_type','')
-    repeat_date = request.REQUEST.getlist('repeat_date','')
+    repeat_date = request.REQUEST.getlist('repeat_date')
     color = request.REQUEST.get('color','')
     groupid = request.REQUEST.get('groupid','')
-    users = request.REQUEST.getlist('users','')
+    users = request.REQUEST.getlist('users')
     if not title or not startdate or not repeat_type or not repeat_date or not groupid:
         return getResult(False,u'请完善信息',None)
     if id:
@@ -225,20 +238,22 @@ def updateSchedule(request):
     else:
         schedule.is_all_day = False
     if time_start:
-        schedule.time_start = datetime.datetime.strptime(time_start,'%H:%M')
+        schedule.time_start = datetime.datetime.strptime(time_start,'%H%M')
     else:
         schedule.time_start = None
 
     if time_end:
-        schedule.time_end = datetime.datetime.strptime(time_end,'%H:%M')
+        schedule.time_end = datetime.datetime.strptime(time_end,'%H%M')
     else:
         schedule.time_end = None
 
     schedule.repeat_type = repeat_type
     schedule.repeat_date = ','.join(repeat_date)
-    schedule.color = color
-    schedule.users = User.objects.filter(username__in=users)
+    schedule.color = int(color)
+    schedule.author = request.user
     schedule.group = Group.objects.get(pk= groupid)
+    schedule.save()
+    schedule.users = User.objects.filter(username__in=users)
     schedule.save()
     return getResult(True,u'保存成功',schedule.pk)
 
