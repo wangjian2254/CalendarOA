@@ -57,15 +57,16 @@ class Task(models.Model):
     users = models.ManyToManyField(User, related_name=u'task_sharedusers', verbose_name=u'参与用户')
 
 
-class Warning(models.Model):
+class RiLiWarning(models.Model):
     '''
     提醒，为日程或任务 创建的提醒
     '''
     TYPE = (('Schedule',u'日程'),('Task',u'任务'))
-    WARN_TYPE = (('email',u'电子邮件'),('sms',u'短信'))
+    WARN_TYPE = (('email',u'电子邮件'),('sms',u'短信'),('rtx',u'腾讯通'))
     type = models.CharField(choices=TYPE,default=TYPE[0][0],max_length=10,verbose_name=u'提醒来源')
     fatherid = models.IntegerField(verbose_name=u'提醒来源的主键')
     warning_type = models.CharField(choices=WARN_TYPE,default=WARN_TYPE[0][0],max_length=10,verbose_name=u'提醒方式')
     timenum = models.IntegerField(verbose_name=u'提前提醒量',help_text=u'提前多少分钟提醒')
     time = models.DateTimeField(verbose_name=u'提醒时间')
     is_repeat = models.BooleanField(default=True,verbose_name=u'是否计算下一次提醒',help_text=u'一次提醒后是否计算下一次提醒时间')
+    is_ok = models.BooleanField(default=False, verbose_name=u'是否提醒过')

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from rili.models import Schedule, REPEAT_TYPE, Group
+from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -220,7 +220,23 @@ def updateSchedule(request):
     color = request.REQUEST.get('color','')
     groupid = request.REQUEST.get('groupid','')
     users = request.REQUEST.getlist('users')
-    if not title or not startdate or not repeat_type or not repeat_date or not groupid:
+
+    warning_email = request.REQUEST.get('warning_email','')
+    warning_sms = request.REQUEST.get('warning_sms','')
+    warning_rtx = request.REQUEST.get('warning_rtx','')
+    wl = []
+    if warning_email.lower()=='true':
+        wl.append('email')
+    if warning_rtx.lower() == 'true':
+        wl.append('rtx')
+    if warning_sms.lower() == 'true':
+        wl.append('sms')
+
+    warning_time1 = request.REQUEST.get('warning_time1','')
+    warning_time2 = request.REQUEST.get('warning_time2','')
+    wtl = [warning_time1,warning_time2]
+
+    if not title or not startdate or not repeat_type  or not groupid:
         return getResult(False,u'请完善信息',None)
     if id:
         schedule = Schedule.objects.get(pk=id)
@@ -255,7 +271,53 @@ def updateSchedule(request):
     schedule.save()
     schedule.users = User.objects.filter(username__in=users)
     schedule.save()
+
+    RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule',fatherid=schedule.pk).delete()
+    for wt in wl:
+        for w in wtl:
+            if int(w):
+                rw = RiLiWarning()
+                rw.fatherid = schedule.pk
+                rw.type = 'Schedule'
+                rw.warning_type = wt
+                rw.timenum = int(w)
+                rw.is_repeat = True
+                rw.is_ok = False
+                rw.save()
+
+
+
     return getResult(True,u'保存成功',schedule.pk)
+
+
+
+def adjustRiLiWarning(id,type):
+    wquery = RiLiWarning.objects.filter(type='Schedule',fatherid=id,is_repeat=True)
+    if 0 == wquery.count():
+        return
+    schedule = Schedule.objects.get(pk=id)
+    if not schedule.is_all_day:
+        currentdate = datetime.datetime.strptime('%s %s'%(schedule.startdate.strftime('%Y%m%d'),schedule.time_start.strftime('%H%M')),'%Y%m%d %H%M')
+    else:
+        currentdate = datetime.datetime.strptime(schedule.startdate.strftime('%Y%m%d'),'%Y%m%d')
+    ds = currentdate.strftime('%Y%m%d%H%M')
+    nowdate = datetime.datetime.now()
+
+    for warning in  RiLiWarning.objects.filter(type='Schedule',fatherid=schedule.pk,is_repeat=True):
+        time = datetime.timedelta(minutes=warning.timenum)
+        tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
+        while time+tempdate < nowdate:
+            tempdate +=datetime.timedelta(days=1)
+            #if tempdate
+        warning.time = time+tempdate
+        if time+tempdate<nowdate:
+            warning.is_repeat = True
+            warning.is_ok = False
+        else:
+            warning.is_repeat = False
+            warning.is_ok = True
+        warning.save()
+
 
 
 
