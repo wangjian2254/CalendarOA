@@ -31,11 +31,13 @@ def menu(request):
     menuxml = '''
         <?xml version='1.0' encoding='utf-8'?>
                 <root>
+                    <menu mod='myMenu1' label='分组和通信录'>
+                        <menuitem label='分组管理' mod='group'></menuitem>
+                        <menuitem label='常用联系人' mod='contact'></menuitem>
+                    </menu>
                     <menu mod='myMenu1' label='日程管理'>
 
                         <menuitem label='日程管理' mod='calendar'></menuitem>
-
-
                     </menu>
                 </root>
         '''
@@ -80,14 +82,14 @@ def regUser(request):
 
         if request.session.test_cookie_worked():
             request.session.delete_test_cookie()
-        return getResult(True, '', None)
+        return getResult(True, '注册成功', None)
     else:
         return getResult(False, '注册失败', None)
 
 
 def saveUser(request):
     result = saveUser(request)
-    return getResult(True, '', result.get('result'))
+    return getResult(True, '修改成功', result.get('result'))
 
 
 @transaction.commit_on_success
@@ -105,6 +107,7 @@ def saveUserFun(request):
         if 0 == Group.objects.filter(author=user).count():
             g = Group()
             g.author = user
+            g.flag = 'default'
             g.color = 0x339933
             g.name = u'%s的日程' % request.REQUEST.get('truename', user.username)
             g.save()
@@ -165,27 +168,14 @@ def getContacts(request):
 
 @client_login_required
 def currentUser(request):
-    return getResult(True, '', {'username': request.user.username, 'truename': request.user.first_name,
-                                'ismanager': request.user.is_staff, 'isaction': request.user.is_active,
-                                'id': request.user.pk})
+    user = {'username': request.user.username, 'nickname': request.user.first_name, 'email':request.user.email,
+                                'ismanager': request.user.is_staff, 'isaction': request.user.is_active, 'rtx':'','sms':'',
+                                'id': request.user.pk}
+    for person in request.user.person_set.all():
+        user['rtx'] = person.rtxnum
+        user['sms'] = person.telphone
 
-
-@client_login_required
-def getMyGroup(request):
-    user = request.user
-
-    groupquery = Group.objects.filter(Q(author=user) | Q(users=user)).order_by('id')
-    l = []
-    for group in groupquery:
-        l.append({'id': group.pk, 'name': group.name, 'author': group.author_id, 'color': group.color,
-                  'userlist': [{'username': u.username, 'nickname': u.first_name} for u in group.users.all()]})
-    if len(l) == 0:
-        g = Group()
-        g.author = user
-        g.color = 0x339933
-        g.name = u'%s的日程' % user.first_name
-        g.save()
-    return getResult(True, '', l)
+    return getResult(True, '', user)
 
 
 @client_login_required
@@ -228,7 +218,7 @@ def getScheduleByDate(request):
                 if dateisright(date,schedule):
                     if not scheduledict.has_key('%s' % schedule.pk):
                         s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc,
-                             'group': schedule.group_id,
+                             'group': schedule.group_id, 'author':schedule.author.username,
                              'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
                              'repeat_type': schedule.repeat_type,
                              'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,

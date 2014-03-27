@@ -21,6 +21,7 @@ class Group(models.Model):
     日程分组
     '''
     name = models.CharField(max_length=30, verbose_name=u'分组名称')
+    flag = models.CharField(max_length=10,verbose_name=u'标示',help_text=u'default :默认分组，custom: 用户自建，system:系统自建')
     color = models.IntegerField(verbose_name=u'html颜色值')
     author = models.ForeignKey(User, verbose_name=u'创建者')
     users = models.ManyToManyField(User, related_name=u'group_sharedusers', verbose_name=u'分享用户')
@@ -75,3 +76,31 @@ class RiLiWarning(models.Model):
     time = models.DateTimeField(verbose_name=u'提醒时间',blank=True,null=True)
     is_repeat = models.BooleanField(default=True,verbose_name=u'是否计算下一次提醒',help_text=u'一次提醒后是否计算下一次提醒时间')
     is_ok = models.BooleanField(default=False, verbose_name=u'是否提醒过')
+
+
+class UrlCheck(models.Model):
+    '''
+    有些通过url连接 进行操作的功能，如：邀请某个人加入的超链接，这些超链接，为了防止被仿冒，增加了校验数据库，对url 和 参数进行提前存储
+    '''
+    flag = models.CharField(max_length=50,verbose_name=u'唯一uuid')
+    param = models.TextField(verbose_name=u'参数序列化',help_text=u'校验参数是否被仿冒')
+    url = models.CharField(max_length=300,verbose_name=u'url序列化',help_text=u'校验url是否被仿冒')
+    is_used = models.BooleanField(default=False,verbose_name=u'是否使用过')
+    timeout = models.DateTimeField(verbose_name=u'过期时间',help_text=u'过期后不可再用',null=True,blank=True)
+
+class RiLiMessage(models.Model):
+    '''
+    站内短消息
+    '''
+    f = models.ForeignKey(User,related_name='from_user',verbose_name=u'发起人')
+    t = models.ManyToManyField(User,related_name='to_user',verbose_name=u'接收人')
+    title = models.CharField(max_length=200,verbose_name=u'标题', null=True, blank=True)
+    desc = models.TextField(verbose_name=u'内容', null=True, blank=True)
+    createtime = models.DateTimeField(auto_created=True,verbose_name=u'创建日期')
+    flag = models.BooleanField(default=True,verbose_name=u'是否草稿')
+    fatherid = models.ForeignKey('RiLiMessage',verbose_name=u'父级信息')
+
+class ReceiveMessage(models.Model):
+    message = models.ForeignKey(RiLiMessage)
+    user = models.ForeignKey(User,verbose_name=u'接收人')
+    is_read = models.BooleanField(default=False,verbose_name=u'是否已读')
