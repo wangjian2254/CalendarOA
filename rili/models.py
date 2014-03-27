@@ -6,6 +6,11 @@ from datetime import datetime
 
 REPEAT_TYPE = (('daily', u'每天的'), ('weekly', u'每周的'), ('monthly', u'每月的'), ('yearly', u'每年的'))
 
+class Person(models.Model):
+    user = models.ForeignKey(User,verbose_name=u'通信录隶属')
+    telphone = models.CharField(max_length=15, null=True, blank=True, verbose_name=u'手机号码')
+    rtxnum = models.CharField(max_length=30, null=True, blank=True, verbose_name=u'腾讯通账号')
+
 class Contacts(models.Model):
     author = models.ForeignKey(User,verbose_name=u'通信录隶属')
     users = models.ManyToManyField(User,related_name=u'contacts_list',verbose_name=u'通信录列表')
@@ -28,8 +33,8 @@ class Schedule(models.Model):
 
     title = models.CharField(max_length=200, verbose_name=u'日程名称')
     desc = models.CharField(max_length=4000, verbose_name=u'备注')
-    startdate = models.DateField(default=datetime.now, verbose_name=u'开始日期', help_text=u'如果每年重复，开始日期，就是重复的日子')
-    enddate = models.DateField(default=datetime.now, null=True, blank=True, verbose_name=u'结束日期', help_text=u'为空，则永远重复')
+    startdate = models.DateTimeField(default=datetime.now, verbose_name=u'开始日期', help_text=u'如果每年重复，开始日期，就是重复的日子')
+    enddate = models.DateTimeField(default=datetime.now, null=True, blank=True, verbose_name=u'结束日期', help_text=u'为空，则永远重复')
     is_all_day = models.BooleanField(default=False, verbose_name=u'是否全天任务', help_text=u'全天任务不需要不需要开始时间')
     time_start = models.TimeField(verbose_name=u'开始时间', null=True, blank=True)
     time_end = models.TimeField(verbose_name=u'结束时间', null=True, blank=True)
@@ -67,6 +72,6 @@ class RiLiWarning(models.Model):
     fatherid = models.IntegerField(verbose_name=u'提醒来源的主键')
     warning_type = models.CharField(choices=WARN_TYPE,default=WARN_TYPE[0][0],max_length=10,verbose_name=u'提醒方式')
     timenum = models.IntegerField(verbose_name=u'提前提醒量',help_text=u'提前多少分钟提醒')
-    time = models.DateTimeField(verbose_name=u'提醒时间')
+    time = models.DateTimeField(verbose_name=u'提醒时间',blank=True,null=True)
     is_repeat = models.BooleanField(default=True,verbose_name=u'是否计算下一次提醒',help_text=u'一次提醒后是否计算下一次提醒时间')
     is_ok = models.BooleanField(default=False, verbose_name=u'是否提醒过')

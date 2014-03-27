@@ -19,7 +19,9 @@ urlpatterns = patterns('rili',
     url(r'^saveUser', 'views.saveUser'),
     url(r'^getMyGroup', 'views.getMyGroup'),
     url(r'^updateSchedule', 'views.updateSchedule'),
+    url(r'^delSchedule', 'views.delSchedule'),
     url(r'^getScheduleByDate', 'views.getScheduleByDate'),
+    url(r'^warningTask', 'warningcron.warningTask'),
 
 
 )

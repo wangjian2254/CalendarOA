@@ -5,15 +5,19 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning
+from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning, Person
+from rili.warningtools import adjustRiLiWarning, dateisright
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.db import transaction
+
 
 def index(request):
     url = 'http://' + request.META['HTTP_HOST'] + '/static/swf/'
     return render_to_response('index.html', {'url': url, 'p': datetime.datetime.now()})
+
 
 def menu(request):
     '''
@@ -37,6 +41,7 @@ def menu(request):
         '''
 
     return HttpResponse(menuxml)
+
 
 def logout(request):
     auth_logout(request)
@@ -69,7 +74,7 @@ def login(request):
 def regUser(request):
     result = saveUserFun(request)
     if result.get('success'):
-        form=AuthenticationForm(data=request.POST)
+        form = AuthenticationForm(data=request.POST)
         form.is_valid()
         auth_login(request, form.get_user())
 
@@ -82,7 +87,10 @@ def regUser(request):
 
 def saveUser(request):
     result = saveUser(request)
-    return  getResult(True,'',result.get('result'))
+    return getResult(True, '', result.get('result'))
+
+
+@transaction.commit_on_success
 def saveUserFun(request):
     id = request.REQUEST.get('id', '')
     if id:
@@ -94,11 +102,11 @@ def saveUserFun(request):
         if not user.username or User.objects.filter(username=user.username).count() > 0:
             return getResult(False, u'用户名已经存在', None)
         user.save()
-        if 0==Group.objects.filter(author = user).count():
+        if 0 == Group.objects.filter(author=user).count():
             g = Group()
             g.author = user
             g.color = 0x339933
-            g.name = u'%s的日程'%request.REQUEST.get('truename', user.username)
+            g.name = u'%s的日程' % request.REQUEST.get('truename', user.username)
             g.save()
     is_active = request.REQUEST.get('isaction', '')
     if is_active:
@@ -116,8 +124,27 @@ def saveUserFun(request):
     if request.REQUEST.has_key('password'):
         user.set_password(request.REQUEST.get('password'))
     user.save()
-    return {'success':True, 'message':'', 'result':{'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
-                                'isaction': user.is_active, 'id': user.pk}}
+    email = request.REQUEST.get('email', '')
+    if email:
+        try:
+            user.email = email
+            user.save()
+        except:
+            pass
+    rtx = request.REQUEST.get('rtx', '')
+    if not hasattr(user, 'person'):
+        person = Person()
+        person.user = user
+    else:
+        person = user.person
+
+    person.rtxnum = rtx
+    sms = request.REQUEST.get('sms', '')
+    person.telphone = sms
+    person.save()
+    return {'success': True, 'message': '',
+            'result': {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
+                       'isaction': user.is_active, 'id': user.pk}}
 
 
 def allmanager(request):
@@ -129,36 +156,36 @@ def allmanager(request):
 
     return getResult(True, '', l)
 
+
 @client_login_required
 def getContacts(request):
-    return getResult(True,'',[{'username':u.username,'nickname':u.first_name} for u in request.user.contacts_list.all()])
+    return getResult(True, '',
+                     [{'username': u.username, 'nickname': u.first_name} for u in request.user.contacts_list.all()])
 
 
 @client_login_required
 def currentUser(request):
-
     return getResult(True, '', {'username': request.user.username, 'truename': request.user.first_name,
-                                    'ismanager': request.user.is_staff, 'isaction': request.user.is_active,
-                                    'id': request.user.pk})
-
-
+                                'ismanager': request.user.is_staff, 'isaction': request.user.is_active,
+                                'id': request.user.pk})
 
 
 @client_login_required
 def getMyGroup(request):
     user = request.user
 
-    groupquery = Group.objects.filter(Q(author=user)|Q(users=user)).order_by('id')
+    groupquery = Group.objects.filter(Q(author=user) | Q(users=user)).order_by('id')
     l = []
     for group in groupquery:
-        l.append({'id':group.pk, 'name':group.name, 'author':group.author_id,  'color':group.color, 'userlist': [{'username':u.username,'nickname':u.first_name} for u in group.users.all()]})
+        l.append({'id': group.pk, 'name': group.name, 'author': group.author_id, 'color': group.color,
+                  'userlist': [{'username': u.username, 'nickname': u.first_name} for u in group.users.all()]})
     if len(l) == 0:
         g = Group()
         g.author = user
         g.color = 0x339933
-        g.name = u'%s的日程'%user.first_name
+        g.name = u'%s的日程' % user.first_name
         g.save()
-    return getResult(True,'',l)
+    return getResult(True, '', l)
 
 
 @client_login_required
@@ -173,80 +200,108 @@ def getScheduleByDate(request):
                     or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime(
                             '%m%d') == schedule.startdate.strftime('%m%d')):
 
+    if schedule.startdate <= date <=schedule.enddate or (schedule.startdate<=date and schedule.enddate == None):
+                    if schedule.repeat_type == REPEAT_TYPE[0][0] or (schedule.repeat_type == REPEAT_TYPE[1][0] and str(date.weekday()) in schedule.repeat_date.split(',') ) or ( schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(',')) or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime('%m%d') == schedule.startdate.strftime('%m%d')):
+
+
     '''
-    date = request.REQUEST.get('date', '')
-    if date:
+    startdatestr = request.REQUEST.get('startdate', '')
+    enddatestr = request.REQUEST.get('enddate', '')
+    if startdatestr and enddatestr:
         user = request.user
-        groupquery = Group.objects.filter(Q(author=user)|Q(users=user))
-        date = datetime.datetime.strptime(date, "%Y%m%d")
-        result = []
-        for schedule in Schedule.objects.filter(Q(author=user)|Q(users=user)|Q(group__in=groupquery)).filter(
-                        Q(startdate__lte=date,enddate__gte=date) | Q(startdate__lte=date,enddate=None)):
-            if not (not (schedule.repeat_type == REPEAT_TYPE[0][0]) and not (
-                            schedule.repeat_type == REPEAT_TYPE[1][0] and str(
-                            date.weekday()) in schedule.repeat_date.split(
-                            ',') ) and not (
-                    schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(','))) \
-                    or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime(
-                            '%m%d') == schedule.startdate.strftime('%m%d')):
-                s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'group':schedule.group_id,
-                     'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
-                      'repeat_type': schedule.repeat_type,
-                     'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
-                     'users': [{'username': u.username, 'nickname': u.first_name} for u in schedule.users.all()]}
-                if schedule.enddate:
-                    s['enddate'] = schedule.enddate.strftime('%Y%m%d')
-                if schedule.time_start:
-                    s['time_start'] = schedule.time_start.strftime('%H%M')
-                if schedule.time_end:
-                    s['time_end'] = schedule.time_end.strftime('%H%M')
-                result.append(s)
-        return getResult(True, '', result)
+        groupquery = Group.objects.filter(Q(author=user) | Q(users=user))
+        startdate = datetime.datetime.strptime(startdatestr, "%Y%m%d")
+        enddate = datetime.datetime.strptime(enddatestr, "%Y%m%d")
+
+        result = {}
+        scheduledict = {}
+        for schedule in Schedule.objects.filter(Q(author=user) | Q(users=user) | Q(group__in=groupquery)).filter(
+                                                Q(startdate__lte=startdate, enddate__gte=enddate) | Q(
+                                                startdate__lte=startdate, enddate__gte=startdate) | Q(
+                                        startdate__gte=startdate, enddate__lte=enddate) | Q(startdate__lte=enddate,
+                                                                                            enddate__gte=enddate) | Q(
+                        startdate__lte=startdate, enddate=None)):
+            date = datetime.datetime.strptime(startdatestr, "%Y%m%d")
+            while date <= enddate:
+                if not result.has_key(date.strftime("%Y%m%d")):
+                    result[date.strftime("%Y%m%d")] = []
+                if dateisright(date,schedule):
+                    if not scheduledict.has_key('%s' % schedule.pk):
+                        s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc,
+                             'group': schedule.group_id,
+                             'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
+                             'repeat_type': schedule.repeat_type,
+                             'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
+                             'users': [{'username': u.username, 'nickname': u.first_name} for u in
+                                       schedule.users.all()]}
+                        if schedule.enddate:
+                            s['enddate'] = schedule.enddate.strftime('%Y%m%d')
+                        if schedule.time_start:
+                            s['time_start'] = schedule.time_start.strftime('%H%M')
+                        if schedule.time_end:
+                            s['time_end'] = schedule.time_end.strftime('%H%M')
+                        s['warningkind']=set()
+                        s['warningtime']=set()
+                        for warning in RiLiWarning.objects.filter(type='Schedule',fatherid=schedule.pk).order_by('type'):
+                            s['warningkind'].add(warning.warning_type)
+                            if len(s['warningkind'])==0 or (len(s['warningkind'])==1 and warning.warning_type in s['warningkind']):
+                                s['warningtime'].add(warning.timenum)
+                        s['warningkind']=list(s['warningkind'])
+                        s['warningtime']=list(s['warningtime'])
+                        s['warningtime'].sort()
+                        s['warningtime'].reverse()
+                        scheduledict['%s' % schedule.pk] = s
+                    result[date.strftime("%Y%m%d")].append(str(schedule.pk))
+                date += datetime.timedelta(days=1)
+        return getResult(True, '', {"schedulemap":scheduledict,'schedulelist':result})
     else:
         return getResult(False, '', None)
 
+
+
 @client_login_required
+@transaction.commit_on_success
 def updateSchedule(request):
-    id = request.REQUEST.get('id','')
-    title = request.REQUEST.get('title','')
-    desc = request.REQUEST.get('desc','')
-    startdate = request.REQUEST.get('startdate','')
-    enddate = request.REQUEST.get('enddate','')
-    is_all_day = request.REQUEST.get('is_all_day','')
-    time_start = request.REQUEST.get('time_start','')
-    time_end = request.REQUEST.get('time_end','')
-    repeat_type = request.REQUEST.get('repeat_type','')
+    id = request.REQUEST.get('id', '')
+    title = request.REQUEST.get('title', '')
+    desc = request.REQUEST.get('desc', '')
+    startdate = request.REQUEST.get('startdate', '')
+    enddate = request.REQUEST.get('enddate', '')
+    is_all_day = request.REQUEST.get('is_all_day', '')
+    time_start = request.REQUEST.get('time_start', '')
+    time_end = request.REQUEST.get('time_end', '')
+    repeat_type = request.REQUEST.get('repeat_type', '')
     repeat_date = request.REQUEST.getlist('repeat_date')
-    color = request.REQUEST.get('color','')
-    groupid = request.REQUEST.get('groupid','')
+    color = request.REQUEST.get('color', '')
+    groupid = request.REQUEST.get('groupid', '')
     users = request.REQUEST.getlist('users')
 
-    warning_email = request.REQUEST.get('warning_email','')
-    warning_sms = request.REQUEST.get('warning_sms','')
-    warning_rtx = request.REQUEST.get('warning_rtx','')
+    warning_email = request.REQUEST.get('warning_email', '')
+    warning_sms = request.REQUEST.get('warning_sms', '')
+    warning_rtx = request.REQUEST.get('warning_rtx', '')
     wl = []
-    if warning_email.lower()=='true':
+    if warning_email.lower() == 'true':
         wl.append('email')
     if warning_rtx.lower() == 'true':
         wl.append('rtx')
     if warning_sms.lower() == 'true':
         wl.append('sms')
 
-    warning_time1 = request.REQUEST.get('warning_time1','')
-    warning_time2 = request.REQUEST.get('warning_time2','')
-    wtl = [warning_time1,warning_time2]
+    warning_time1 = request.REQUEST.get('warning_time1', '')
+    warning_time2 = request.REQUEST.get('warning_time2', '')
+    wtl = [warning_time1, warning_time2]
 
-    if not title or not startdate or not repeat_type  or not groupid:
-        return getResult(False,u'请完善信息',None)
+    if not title or not startdate or not repeat_type or not groupid:
+        return getResult(False, u'请完善信息', None)
     if id:
         schedule = Schedule.objects.get(pk=id)
     else:
         schedule = Schedule()
     schedule.title = title
     schedule.desc = desc
-    schedule.startdate = datetime.datetime.strptime(startdate,"%Y%m%d")
+    schedule.startdate = datetime.datetime.strptime(startdate, "%Y%m%d")
     if enddate:
-        schedule.enddate = datetime.datetime.strptime(enddate,"%Y%m%d")
+        schedule.enddate = datetime.datetime.strptime(enddate, "%Y%m%d")
     else:
         schedule.enddate = None
     if is_all_day.lower() == 'true':
@@ -254,12 +309,12 @@ def updateSchedule(request):
     else:
         schedule.is_all_day = False
     if time_start:
-        schedule.time_start = datetime.datetime.strptime(time_start,'%H%M')
+        schedule.time_start = datetime.datetime.strptime(time_start, '%H%M')
     else:
         schedule.time_start = None
 
     if time_end:
-        schedule.time_end = datetime.datetime.strptime(time_end,'%H%M')
+        schedule.time_end = datetime.datetime.strptime(time_end, '%H%M')
     else:
         schedule.time_end = None
 
@@ -267,12 +322,12 @@ def updateSchedule(request):
     schedule.repeat_date = ','.join(repeat_date)
     schedule.color = int(color)
     schedule.author = request.user
-    schedule.group = Group.objects.get(pk= groupid)
+    schedule.group = Group.objects.get(pk=groupid)
     schedule.save()
     schedule.users = User.objects.filter(username__in=users)
     schedule.save()
 
-    RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule',fatherid=schedule.pk).delete()
+    RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
     for wt in wl:
         for w in wtl:
             if int(w):
@@ -282,41 +337,20 @@ def updateSchedule(request):
                 rw.warning_type = wt
                 rw.timenum = int(w)
                 rw.is_repeat = True
-                rw.is_ok = False
+                rw.is_ok = True
                 rw.save()
+    adjustRiLiWarning(schedule.id)
+    return getResult(True, u'保存成功', schedule.pk)
 
 
-
-    return getResult(True,u'保存成功',schedule.pk)
-
-
-
-def adjustRiLiWarning(id,type):
-    wquery = RiLiWarning.objects.filter(type='Schedule',fatherid=id,is_repeat=True)
-    if 0 == wquery.count():
-        return
+@client_login_required
+@transaction.commit_on_success
+def delSchedule(request):
+    id = request.REQUEST.get('id', '')
     schedule = Schedule.objects.get(pk=id)
-    if not schedule.is_all_day:
-        currentdate = datetime.datetime.strptime('%s %s'%(schedule.startdate.strftime('%Y%m%d'),schedule.time_start.strftime('%H%M')),'%Y%m%d %H%M')
-    else:
-        currentdate = datetime.datetime.strptime(schedule.startdate.strftime('%Y%m%d'),'%Y%m%d')
-    ds = currentdate.strftime('%Y%m%d%H%M')
-    nowdate = datetime.datetime.now()
-
-    for warning in  RiLiWarning.objects.filter(type='Schedule',fatherid=schedule.pk,is_repeat=True):
-        time = datetime.timedelta(minutes=warning.timenum)
-        tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
-        while time+tempdate < nowdate:
-            tempdate +=datetime.timedelta(days=1)
-            #if tempdate
-        warning.time = time+tempdate
-        if time+tempdate<nowdate:
-            warning.is_repeat = True
-            warning.is_ok = False
-        else:
-            warning.is_repeat = False
-            warning.is_ok = True
-        warning.save()
+    RiLiWarning.objects.filter(type='Schedule', fatherid=schedule.pk).delete()
+    schedule.delete()
+    return getResult(True, u'删除成功', id)
 
 
 

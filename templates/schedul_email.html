@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ subject }}</title>
+</head>
+<body>
+<div style=" margin: auto;text-align: center;  width: 300px;  ">
+    <p><b>日程提醒</b></p>
+    <p>日程：{{ schedule.title }}</p>
+    <p>开始时间：{{ today|date:"Y年m月d日H时i分"}} {% if schedule.is_all_day %} 至 {{ schedule.time_end|date:"H时i分" }}{% endif %}</p>
+    <p>参与人：{% for u in schedule.users.all %}{{ u.first_name }}、{% endfor %}{{ schedule.author.first_name }}</p>
+    <p>内容：{{ schedule.desc }}</p>
+
+</div>
+</body>
+</html>

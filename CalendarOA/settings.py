@@ -1,3 +1,4 @@
+#coding=utf-8
 # Django settings for CalendarOA project.
 import os
 os.environ['LANG'] = 'en_US.UTF-8'
@@ -12,12 +13,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'calendar.db',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'calendar',                      # Or path to database file if using sqlite3.
+        'USER': 'root',                      # Not used with sqlite3.
+        'PASSWORD': 'htfsdb',                  # Not used with sqlite3.
+        'HOST': '192.168.101.4',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -156,3 +157,14 @@ LOGGING = {
         },
     }
 }
+
+
+EMAIL_HOST = 'smtp.126.com'#                   #邮件smtp服务器
+EMAIL_PORT = '25'                                        #端口
+EMAIL_HOST_USER = 'wangjian2254'  #邮件账户
+EMAIL_HOST_EMAIL = 'wangjian2254@126.com'  #邮件账户
+EMAIL_HOST_PASSWORD = '12605992254wj'      #密码
+EMAIL_USE_TLS = False
+
+RTX_PORT = 8012
+RTX_HOST = 'http://192.168.101.4'
