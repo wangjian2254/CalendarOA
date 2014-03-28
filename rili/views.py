@@ -212,7 +212,7 @@ def getScheduleByDate(request):
                                                 startdate__lte=startdate, enddate__gte=startdate) | Q(
                                         startdate__gte=startdate, enddate__lte=enddate) | Q(startdate__lte=enddate,
                                                                                             enddate__gte=enddate) | Q(
-                        startdate__lte=startdate, enddate=None)):
+                        startdate__lte=enddate, enddate=None)):
             if schedule.pk in schedulepkset:
                 continue
             schedulepkset.add(schedule.pk)
@@ -323,10 +323,10 @@ def updateSchedule(request):
     schedule.save()
 
     RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
-    if schedule.enddate and schedule.enddate>datetime.datetime.now():
+    if (schedule.enddate and schedule.enddate>datetime.datetime.now()) or not schedule.enddate:
         for wt in wl:
             for w in wtl:
-                if int(w):
+                if w:
                     rw = RiLiWarning()
                     rw.fatherid = schedule.pk
                     rw.type = 'Schedule'

@@ -7,14 +7,14 @@ from rili.models import RiLiWarning, Schedule, REPEAT_TYPE
 __author__ = u'王健'
 
 def dateisright(date,schedule):
-    if schedule.startdate <= date <=schedule.enddate or (schedule.startdate<=date and schedule.enddate == None):
+    if (schedule.startdate<=date and schedule.enddate == None) or schedule.startdate <= date <=schedule.enddate :
         if schedule.repeat_type == REPEAT_TYPE[0][0] or (schedule.repeat_type == REPEAT_TYPE[1][0] and str(date.weekday()) in schedule.repeat_date.split(',') ) or ( schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(',')) or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime('%m%d') == schedule.startdate.strftime('%m%d')):
             return True
     return False
 
 
 def dateinrange(date,schedule):
-    if schedule.startdate <= date <=schedule.enddate or (schedule.startdate<=date and schedule.enddate == None):
+    if (schedule.startdate<=date and schedule.enddate == None) or schedule.startdate <= date <=schedule.enddate:
         return True
     return False
 
