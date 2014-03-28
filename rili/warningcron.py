@@ -44,8 +44,8 @@ def warningTask(request):
                 to_rtx_list = set()
                 joinuserlist = set()
                 joinuserlist.add(schedule.author.first_name)
-                for user in schedule.author.person_set.all():
-                    to_rtx_list.add(user.rtxnum)
+                if hasattr(schedule.author,'person'):
+                    to_rtx_list.add(schedule.author.person.rtxnum)
                 for user in schedule.users.all():
                     joinuserlist.add(user.first_name)
                     if hasattr(user,'person'):

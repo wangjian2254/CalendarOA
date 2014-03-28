@@ -13,6 +13,12 @@ def dateisright(date,schedule):
     return False
 
 
+def dateinrange(date,schedule):
+    if schedule.startdate <= date <=schedule.enddate or (schedule.startdate<=date and schedule.enddate == None):
+        return True
+    return False
+
+
 def adjustRiLiWarning(id):
     wquery = RiLiWarning.objects.filter(type='Schedule',fatherid=id,is_repeat=True,is_ok=True)
     if 0 == wquery.count():
@@ -39,12 +45,12 @@ def adjustRiLiWarning(id):
             tempdate = warning.time + datetime.timedelta(minutes=0-warning.timenum)
         else:
             tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
-        while time+tempdate < nowdate or not dateisright(tempdate,schedule):
+        while (time+tempdate < nowdate or not dateisright(tempdate,schedule)) and dateinrange(tempdate,schedule):
             if schedule.repeat_type == 'yearly':
                 tempdate +=datetime.timedelta(days=365)
             else:
                 tempdate +=datetime.timedelta(days=1)
-            while not dateisright(tempdate,schedule):
+            while not dateisright(tempdate,schedule) and dateinrange(tempdate,schedule):
                 tempdate +=datetime.timedelta(days=1)
 
             # if (enddate and tempdate>enddate) or( time+tempdate > nowdate):

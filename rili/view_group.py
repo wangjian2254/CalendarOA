@@ -71,7 +71,7 @@ def joinGroup(request):
                 group.users.remove(User.objects.get(username=username))
                 group.save()
         else:
-            return getResult(False,'操作不正确',id)
+            return getResult(False,u'操作不正确',id)
         return getResult(True,u'完成操作',id)
     else:
-        return getResult(False,'操作不正确',id)
+        return getResult(False,u'操作不正确',id)

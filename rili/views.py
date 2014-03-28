@@ -27,12 +27,13 @@ def menu(request):
 				    <menuitem label='知识库编辑' mod='knowledgeedit'></menuitem>
 				    <menuitem label='知识库查询' mod='knowledgequery'></menuitem>
     '''
+    # <menuitem label='分组管理' mod='group'></menuitem>
 
     menuxml = '''
         <?xml version='1.0' encoding='utf-8'?>
                 <root>
-                    <menu mod='myMenu1' label='分组和通信录'>
-                        <menuitem label='分组管理' mod='group'></menuitem>
+                    <menu mod='myMenu1' label='通信录'>
+
                         <menuitem label='常用联系人' mod='contact'></menuitem>
                     </menu>
                     <menu mod='myMenu1' label='日程管理'>
@@ -171,9 +172,9 @@ def currentUser(request):
     user = {'username': request.user.username, 'nickname': request.user.first_name, 'email':request.user.email,
                                 'ismanager': request.user.is_staff, 'isaction': request.user.is_active, 'rtx':'','sms':'',
                                 'id': request.user.pk}
-    for person in request.user.person_set.all():
-        user['rtx'] = person.rtxnum
-        user['sms'] = person.telphone
+    if hasattr(request.user,'person'):
+        user['rtx'] = request.user.person.rtxnum
+        user['sms'] = request.user.person.telphone
 
     return getResult(True, '', user)
 
@@ -205,12 +206,16 @@ def getScheduleByDate(request):
 
         result = {}
         scheduledict = {}
+        schedulepkset = set()
         for schedule in Schedule.objects.filter(Q(author=user) | Q(users=user) | Q(group__in=groupquery)).filter(
                                                 Q(startdate__lte=startdate, enddate__gte=enddate) | Q(
                                                 startdate__lte=startdate, enddate__gte=startdate) | Q(
                                         startdate__gte=startdate, enddate__lte=enddate) | Q(startdate__lte=enddate,
                                                                                             enddate__gte=enddate) | Q(
                         startdate__lte=startdate, enddate=None)):
+            if schedule.pk in schedulepkset:
+                continue
+            schedulepkset.add(schedule.pk)
             date = datetime.datetime.strptime(startdatestr, "%Y%m%d")
             while date <= enddate:
                 if not result.has_key(date.strftime("%Y%m%d")):
@@ -218,7 +223,7 @@ def getScheduleByDate(request):
                 if dateisright(date,schedule):
                     if not scheduledict.has_key('%s' % schedule.pk):
                         s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc,
-                             'group': schedule.group_id, 'author':schedule.author.username,
+                             'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,
                              'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
                              'repeat_type': schedule.repeat_type,
                              'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
@@ -318,18 +323,19 @@ def updateSchedule(request):
     schedule.save()
 
     RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
-    for wt in wl:
-        for w in wtl:
-            if int(w):
-                rw = RiLiWarning()
-                rw.fatherid = schedule.pk
-                rw.type = 'Schedule'
-                rw.warning_type = wt
-                rw.timenum = int(w)
-                rw.is_repeat = True
-                rw.is_ok = True
-                rw.save()
-    adjustRiLiWarning(schedule.id)
+    if schedule.enddate and schedule.enddate>datetime.datetime.now():
+        for wt in wl:
+            for w in wtl:
+                if int(w):
+                    rw = RiLiWarning()
+                    rw.fatherid = schedule.pk
+                    rw.type = 'Schedule'
+                    rw.warning_type = wt
+                    rw.timenum = int(w)
+                    rw.is_repeat = True
+                    rw.is_ok = True
+                    rw.save()
+        adjustRiLiWarning(schedule.id)
     return getResult(True, u'保存成功', schedule.pk)
 
 
