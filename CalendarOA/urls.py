@@ -7,6 +7,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'rili.views.index'),
+    url('^calendar/dav/wangjian/user/', 'rili.caldav.davuser'),
+    url('^\.well-known/caldav', 'rili.caldav.know'),
+    url(r'^principals/', 'rili.caldav.principals'),
     url(r'^CalendarOA_Flex.html$', 'rili.views.index'),
     url(r'^ca/', include('rili.urls')),
 
