@@ -155,7 +155,7 @@ def saveUserFun(request):
             g = Group()
             g.author = user
             g.flag = 'default'
-            g.color = 0x339933
+            g.color = 0xeaeaea
             g.name = u'%s的日程' % request.REQUEST.get('truename', user.username)
             g.save()
     is_active = request.REQUEST.get('isaction', '')
@@ -258,7 +258,7 @@ def getScheduleByDate(request):
                                                 startdate__lte=startdate, enddate__gte=startdate) | Q(
                                         startdate__gte=startdate, enddate__lte=enddate) | Q(startdate__lte=enddate,
                                                                                             enddate__gte=enddate) | Q(
-                        startdate__lte=enddate, enddate=None)):
+                        startdate__lte=enddate, enddate=None)).order_by('time_start'):
             if schedule.pk in schedulepkset:
                 continue
             schedulepkset.add(schedule.pk)
@@ -369,18 +369,19 @@ def updateSchedule(request):
     schedule.save()
 
     RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
+
+    for wt in wl:
+        for w in wtl:
+            if w:
+                rw = RiLiWarning()
+                rw.fatherid = schedule.pk
+                rw.type = 'Schedule'
+                rw.warning_type = wt
+                rw.timenum = int(w)
+                rw.is_repeat = True
+                rw.is_ok = True
+                rw.save()
     if (schedule.enddate and schedule.enddate>datetime.datetime.now()) or not schedule.enddate:
-        for wt in wl:
-            for w in wtl:
-                if w:
-                    rw = RiLiWarning()
-                    rw.fatherid = schedule.pk
-                    rw.type = 'Schedule'
-                    rw.warning_type = wt
-                    rw.timenum = int(w)
-                    rw.is_repeat = True
-                    rw.is_ok = True
-                    rw.save()
         adjustRiLiWarning(schedule.id)
     return getResult(True, u'保存成功', schedule.pk)
 

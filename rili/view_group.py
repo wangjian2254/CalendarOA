@@ -24,7 +24,7 @@ def getMyGroup(request):
     if len(l) == 0:
         g = Group()
         g.author = user
-        g.color = 0x339933
+        g.color = 0xeaeaea
         g.flag = 'default'
         g.name = u'%s的日程' % user.first_name
         g.save()
