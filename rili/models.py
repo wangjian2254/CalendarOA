@@ -59,7 +59,10 @@ class Task(models.Model):
     title = models.CharField(max_length=200,verbose_name=u'任务名称')
     desc = models.CharField(max_length=4000, verbose_name=u'备注')
     startdate = models.DateField(default=datetime.now, db_index=True, verbose_name=u'创建日期')
-    status = models.BooleanField(default=True, db_index=True,verbose_name=u'完成状态')
+    enddate = models.DateField(default=datetime.now, db_index=True, verbose_name=u'截止日期')
+    status = models.BooleanField(default=False, db_index=True,verbose_name=u'完成状态')
+    color = models.IntegerField( verbose_name=u'html颜色值',help_text=u'颜色不同可以区分缓急，可以作为日程的小分组')
+    author = models.ForeignKey(User, verbose_name=u'创建者')
     users = models.ManyToManyField(User, related_name=u'task_sharedusers', verbose_name=u'参与用户')
 
 
