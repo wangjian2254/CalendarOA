@@ -73,14 +73,15 @@ def menu(request):
 				    <menuitem label='知识库编辑' mod='knowledgeedit'></menuitem>
 				    <menuitem label='知识库查询' mod='knowledgequery'></menuitem>
     '''
-    # <menuitem label='分组管理' mod='group'></menuitem>
+    #
 
     menuxml = '''
         <?xml version='1.0' encoding='utf-8'?>
                 <root>
-                    <menu mod='myMenu1' label='通信录'>
+                    <menu mod='myMenu1' label='分组和通信录'>
 
                         <menuitem label='常用联系人' mod='contact'></menuitem>
+                        <menuitem label='分组管理' mod='group'></menuitem>
                     </menu>
                     <menu mod='myMenu1' label='日程管理'>
 

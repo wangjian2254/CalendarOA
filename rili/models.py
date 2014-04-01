@@ -25,6 +25,7 @@ class Group(models.Model):
     color = models.IntegerField(verbose_name=u'html颜色值')
     author = models.ForeignKey(User, verbose_name=u'创建者')
     users = models.ManyToManyField(User, related_name=u'group_sharedusers', verbose_name=u'分享用户')
+    observers = models.ManyToManyField(User, related_name=u'group_sharedobservers', verbose_name=u'观察者用户',help_text=u'只能看到不能编辑')
 
 
 class Schedule(models.Model):
