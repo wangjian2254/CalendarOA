@@ -268,7 +268,7 @@ def getScheduleByDate(request):
                     result[date.strftime("%Y%m%d")] = []
                 if dateisright(date,schedule):
                     if not scheduledict.has_key('%s' % schedule.pk):
-                        s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc,
+                        s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'type':'schedule',
                              'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,
                              'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
                              'repeat_type': schedule.repeat_type,

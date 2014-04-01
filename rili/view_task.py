@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
 from rili.models import Task, RiLiWarning
+from rili.warningtools import adjustRiLiWarning
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 
@@ -15,56 +16,55 @@ __author__ = u'王健'
 
 
 @client_login_required
-def getTaskByDate(request):
+def getTaskByStatus(request):
     '''
     date 的格式为 yyyymmdd
     如果没有则返回空
     获取日期间的任务
     '''
-    startdatestr = request.REQUEST.get('startdate', '')
-    enddatestr = request.REQUEST.get('enddate', '')
-    if startdatestr and enddatestr:
-        user = request.user
-        startdate = datetime.datetime.strptime(startdatestr, "%Y%m%d")
-        enddate = datetime.datetime.strptime(enddatestr, "%Y%m%d")
-
-        result = {}
-        taskdict = {}
-        taskpkset = set()
-        for task in Task.objects.filter(Q(author=user) | Q(users=user) ).filter(
-                                                Q(startdate__lte=startdate, enddate__gte=enddate) | Q(
-                                                startdate__lte=startdate, enddate__gte=startdate) | Q(
-                                        startdate__gte=startdate, enddate__lte=enddate) | Q(startdate__lte=enddate,
-                                                                                            enddate__gte=enddate) | Q(
-                        startdate__lte=enddate, enddate=None)).order_by('time_start'):
-            if task.pk in taskpkset:
-                continue
-            taskpkset.add(task.pk)
-
-            if not taskdict.has_key('%s' % task.pk):
-                s = {'id': task.pk, 'title': task.title, 'desc': task.desc,
-                        'author':task.author.username, 'authornickname':task.author.first_name,
-                     'startdate': task.startdate.strftime('%Y%m%d'),
-                     'color': task.color,
-                     'users': [{'username': u.username, 'nickname': u.first_name} for u in
-                               task.users.all()]}
-                s['enddate'] = task.enddate.strftime('%Y%m%d')
-
-                s['warningkind']=set()
-                s['warningtime']=set()
-                for warning in RiLiWarning.objects.filter(type='Task',fatherid=task.pk).order_by('type'):
-                    s['warningkind'].add(warning.warning_type)
-                    if len(s['warningkind'])==0 or (len(s['warningkind'])==1 and warning.warning_type in s['warningkind']):
-                        s['warningtime'].add(warning.timenum)
-                s['warningkind']=list(s['warningkind'])
-                s['warningtime']=list(s['warningtime'])
-                s['warningtime'].sort()
-                s['warningtime'].reverse()
-                taskdict['%s' % task.pk] = s
-            result.append(str(task.pk))
-        return getResult(True, '', {"taskmap":taskdict,'tasklist':result})
+    status = request.REQUEST.get('status', 'false')
+    today = request.REQUEST.get('today', 'false')
+    user = request.user
+    if status=='false':
+        status=False
     else:
-        return getResult(False, '', None)
+        status=True
+    if today=='false':
+        today=False
+    else:
+        today=True
+
+    result = []
+    taskdict = {}
+    taskpkset = set()
+    tquery =Task.objects.filter(author=user)
+    if today:
+        tquery = tquery.filter(status=status)
+    else:
+        n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
+        tquery = tquery.filter(Q(status=status)|Q(startdate__lte=n, enddate__gte=n))
+    for task in tquery.order_by('startdate'):
+        if task.pk in taskpkset:
+            continue
+        taskpkset.add(task.pk)
+
+        if not taskdict.has_key('%s' % task.pk):
+            s = {'id': task.pk, 'title': task.title, 'desc': task.desc, 'type': 'task', 'author': task.author.username,
+                 'authornickname': task.author.first_name, 'startdate': task.startdate.strftime('%Y%m%d'),
+                 'color': task.color, 'enddate': task.enddate.strftime('%Y%m%d'),
+                 'warningkind': set(), 'warningtime': set(), 'status':task.status}
+
+            for warning in RiLiWarning.objects.filter(type='Task',fatherid=task.pk).order_by('type'):
+                s['warningkind'].add(warning.warning_type)
+                if len(s['warningkind'])==0 or (len(s['warningkind'])==1 and warning.warning_type in s['warningkind']):
+                    s['warningtime'].add(warning.timenum)
+            s['warningkind']=list(s['warningkind'])
+            s['warningtime']=list(s['warningtime'])
+            s['warningtime'].sort()
+            s['warningtime'].reverse()
+            result.append(s)
+    return getResult(True, '', result)
+
 
 
 
@@ -78,7 +78,6 @@ def updateTask(request):
     enddate = request.REQUEST.get('enddate', '')
 
     color = request.REQUEST.get('color', '')
-    users = request.REQUEST.getlist('users')
 
     warning_email = request.REQUEST.get('warning_email', '')
     warning_sms = request.REQUEST.get('warning_sms', '')
@@ -110,8 +109,7 @@ def updateTask(request):
     task.color = int(color)
     task.author = request.user
     task.save()
-    task.users = User.objects.filter(username__in=users)
-    task.save()
+
 
     RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Task', fatherid=task.pk).delete()
 
@@ -126,9 +124,8 @@ def updateTask(request):
                 rw.is_repeat = True
                 rw.is_ok = True
                 rw.save()
-    if   task.status:
-        pass
-        #adjustRiLiWarning(schedule.id)
+    if task.status:
+        adjustRiLiWarning(task.id,'Task')
     return getResult(True, u'保存成功', task.pk)
 
 
@@ -140,4 +137,18 @@ def delTask(request):
     RiLiWarning.objects.filter(type='Task', fatherid=schedule.pk).delete()
     schedule.delete()
     return getResult(True, u'删除成功', id)
-  
+
+@client_login_required
+@transaction.commit_on_success
+def doTask(request):
+    id = request.REQUEST.get('id', '')
+    do = request.REQUEST.get('do', '')
+    schedule = Task.objects.get(pk=id)
+    if do=='true':
+        schedule.status=True
+    else:
+        schedule.status=False
+    RiLiWarning.objects.filter(type='Task', fatherid=schedule.pk).update(is_repeat=False,is_ok=True)
+    schedule.save()
+    adjustRiLiWarning(schedule.id,'Task')
+    return getResult(True, u'删除成功', id)

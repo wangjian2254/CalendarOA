@@ -23,6 +23,10 @@ urlpatterns = patterns('rili',
     url(r'^updateSchedule', 'views.updateSchedule'),
     url(r'^delSchedule', 'views.delSchedule'),
     url(r'^getScheduleByDate', 'views.getScheduleByDate'),
+    url(r'^getTaskByStatus', 'view_task.getTaskByStatus'),
+    url(r'^updateTask', 'view_task.updateTask'),
+    url(r'^delTask', 'view_task.delTask'),
+    url(r'^doTask', 'view_task.doTask'),
     url(r'^warningTask', 'warningcron.warningTask'),
 
 
