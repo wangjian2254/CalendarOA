@@ -27,6 +27,9 @@ urlpatterns = patterns('rili',
     url(r'^updateTask', 'view_task.updateTask'),
     url(r'^delTask', 'view_task.delTask'),
     url(r'^doTask', 'view_task.doTask'),
+    url(r'^updateGroup', 'view_group.updateGroup'),
+    url(r'^joinGroup', 'view_group.joinGroup'),
+    url(r'^delGroup', 'view_group.delGroup'),
     url(r'^warningTask', 'warningcron.warningTask'),
 
 
