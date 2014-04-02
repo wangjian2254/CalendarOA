@@ -136,7 +136,7 @@ def regUser(request):
 
 
 def saveUser(request):
-    result = saveUser(request)
+    result = saveUserFun(request)
     return getResult(True, '修改成功', result.get('result'))
 
 
@@ -182,16 +182,16 @@ def saveUserFun(request):
             user.save()
         except:
             pass
-    rtx = request.REQUEST.get('rtx', '')
     if not hasattr(user, 'person'):
         person = Person()
         person.user = user
     else:
         person = user.person
 
-    person.rtxnum = rtx
-    sms = request.REQUEST.get('sms', '')
-    person.telphone = sms
+    person.rtxnum = request.REQUEST.get('rtx', '')
+    person.telphone = request.REQUEST.get('sms', '')
+    person.zentao_account = request.REQUEST.get('zentao_account', '')
+    person.zentao_password = request.REQUEST.get('zentao_password', '')
     person.save()
     return {'success': True, 'message': '',
             'result': {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
@@ -216,7 +216,7 @@ def getContacts(request):
 
 @client_login_required
 def currentUser(request):
-    user = {'username': request.user.username, 'nickname': request.user.first_name, 'email':request.user.email,
+    user = {'username': request.user.username, 'nickname': request.user.first_name, 'email':request.user.email, 'zentao_account':request.user.person.zentao_account, 'zentao_password':request.user.person.zentao_password,
                                 'ismanager': request.user.is_staff, 'isaction': request.user.is_active, 'rtx':'','sms':'',
                                 'id': request.user.pk}
     if hasattr(request.user,'person'):

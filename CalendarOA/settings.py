@@ -11,26 +11,26 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-#DATABASES = {
-#   'default': {
-#       'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-#       'NAME': 'calendar',                      # Or path to database file if using sqlite3.
-#       'USER': 'root',                      # Not used with sqlite3.
-#       'PASSWORD': 'htfsdb',                  # Not used with sqlite3.
-#       'HOST': '192.168.101.4',                      # Set to empty string for localhost. Not used with sqlite3.
-#       'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
-#   }
-#}
 DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-         'NAME': 'calendar',                      # Or path to database file if using sqlite3.
-         'USER': 'root',                      # Not used with sqlite3.
-         'PASSWORD': 'htfsdb',                  # Not used with sqlite3.
-         'HOST': '192.168.101.4',                      # Set to empty string for localhost. Not used with sqlite3.
-         'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
-     }
+  'default': {
+      'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+      'NAME': 'calendar',                      # Or path to database file if using sqlite3.
+      'USER': 'root',                      # Not used with sqlite3.
+      'PASSWORD': 'htfsdb',                  # Not used with sqlite3.
+      'HOST': '192.168.101.4',                      # Set to empty string for localhost. Not used with sqlite3.
+      'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
+  }
 }
+# DATABASES = {
+#      'default': {
+#          'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+#          'NAME': 'calendar',                      # Or path to database file if using sqlite3.
+#          'USER': 'root',                      # Not used with sqlite3.
+#          'PASSWORD': 'htfsdb',                  # Not used with sqlite3.
+#          'HOST': '192.168.101.4',                      # Set to empty string for localhost. Not used with sqlite3.
+#          'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
+#      }
+# }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
@@ -99,6 +99,8 @@ STATICFILES_FINDERS = (
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '+4kip^hmgt=g8k9_j$%6lmhjl6$@vfux^45&amp;222^l*c5bcg=n*'
+
+CACHE_BACKEND = 'db://cache_data/?timeout=300&max_entries=2000'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -178,3 +180,7 @@ EMAIL_USE_TLS = False
 
 RTX_PORT = 8012
 RTX_HOST = 'http://192.168.101.4'
+
+ZENTAO_HOST = 'http://pms.zxxsbook.com'
+
+SMS_HOST = ''

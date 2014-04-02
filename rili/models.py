@@ -1,5 +1,6 @@
 #coding=utf-8
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.db import models
 from datetime import datetime
 # Create your models here.
@@ -9,7 +10,9 @@ REPEAT_TYPE = (('daily', u'每天的'), ('weekly', u'每周的'), ('monthly', u'
 class Person(models.Model):
     user = models.OneToOneField(User,verbose_name=u'账户')
     telphone = models.CharField(max_length=15, db_index=True, null=True, blank=True, verbose_name=u'手机号码')
-    rtxnum = models.CharField(max_length=30, db_index=True, null=True, blank=True, verbose_name=u'腾讯通账号')
+    rtxnum = models.CharField(max_length=30,unique=True, db_index=True, null=True, blank=True, verbose_name=u'腾讯通账号')
+    zentao_account = models.CharField(max_length=30,unique=True, db_index=True, null=True, blank=True, verbose_name=u'禅道账号')
+    zentao_password = models.CharField(max_length=30, db_index=True, null=True, blank=True, verbose_name=u'禅道密码')
 
 class Contacts(models.Model):
     user = models.OneToOneField(User,verbose_name=u'通信录隶属')
@@ -107,3 +110,4 @@ class ReceiveMessage(models.Model):
     message = models.ForeignKey(RiLiMessage)
     user = models.ForeignKey(User,verbose_name=u'接收人')
     is_read = models.BooleanField(default=False,verbose_name=u'是否已读')
+
