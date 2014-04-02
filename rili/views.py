@@ -247,7 +247,7 @@ def getScheduleByDate(request):
     enddatestr = request.REQUEST.get('enddate', '')
     if startdatestr and enddatestr:
         user = request.user
-        groupquery = Group.objects.filter(Q(author=user) | Q(users=user))
+        groupquery = Group.objects.filter(Q(author=user) | Q(users=user) | Q(observers=user))
         startdate = datetime.datetime.strptime(startdatestr, "%Y%m%d")
         enddate = datetime.datetime.strptime(enddatestr, "%Y%m%d")
 

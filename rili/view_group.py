@@ -63,9 +63,13 @@ def updateGroup(request):
 
     if join:
         group.users = User.objects.filter(username__in=join)
+    else:
+        group.users = []
+    if observers:
         group.observers = User.objects.filter(username__in=observers)
-        group.users.save()
-        group.users.save()
+    else:
+        group.observers = []
+    group.save()
 
     return getResult(True,'保存成功',group.pk)
 
