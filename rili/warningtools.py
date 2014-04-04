@@ -7,11 +7,11 @@ from rili.models import  Schedule, REPEAT_TYPE, Task, RiLiWarning
 __author__ = u'王健'
 
 def dateisright(date,schedule):
-    if dateinrange(date,schedule) :
-        if not hasattr(schedule,'repeat_type'):
-            return True
-        if schedule.repeat_type == REPEAT_TYPE[0][0] or (schedule.repeat_type == REPEAT_TYPE[1][0] and str(date.weekday()) in schedule.repeat_date.split(',') ) or ( schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(',')) or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime('%m%d') == schedule.startdate.strftime('%m%d')):
-            return True
+
+    if not hasattr(schedule,'repeat_type'):
+        return True
+    if schedule.repeat_type == REPEAT_TYPE[0][0] or (schedule.repeat_type == REPEAT_TYPE[1][0] and str(date.weekday()) in schedule.repeat_date.split(',') ) or ( schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(',')) or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime('%m%d') == schedule.startdate.strftime('%m%d')):
+        return True
     return False
 
 
@@ -52,16 +52,13 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
             tempdate = warning.time + datetime.timedelta(minutes=0-warning.timenum)
         else:
             tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
-        while (time+tempdate < nowdate or not dateisright(tempdate,obj)) and dateinrange(tempdate,obj):
+        while time+tempdate < nowdate or not (dateinrange(tempdate,obj) and dateisright(tempdate,obj)):
             if hasattr(obj,'repeat_type') and obj.repeat_type == 'yearly':
                 tempdate +=datetime.timedelta(days=365)
             else:
                 tempdate +=datetime.timedelta(days=1)
             while not dateisright(tempdate,obj) and dateinrange(tempdate,obj):
                 tempdate +=datetime.timedelta(days=1)
-
-            # if (enddate and tempdate>enddate) or( time+tempdate > nowdate):
-            #     break
 
         warning.time = time+tempdate
         if time+tempdate>nowdate:

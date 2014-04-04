@@ -178,8 +178,8 @@ def zentaoTaskFun(sessiondata,person):
                 if not taskitem.pk or taskitem.lastUpdateTime<lastEditDate:
                     taskitem.author = person.user
                     taskitem.desc = schedultDesc
-                    taskitem.enddate = endTime
-                    taskitem.startdate = startTime
+                    taskitem.enddate = None
+                    taskitem.startdate = endTime
                     taskitem.title =schedultTitle
                     taskitem.lastUpdateTime=lastEditDate
                     taskitem.desc = schedultDesc
