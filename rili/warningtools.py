@@ -2,12 +2,12 @@
 #Date: 11-12-8
 #Time: 下午10:28
 import datetime
-from rili.models import RiLiWarning, Schedule, REPEAT_TYPE, Task
+from rili.models import  Schedule, REPEAT_TYPE, Task, RiLiWarning
 
 __author__ = u'王健'
 
 def dateisright(date,schedule):
-    if (schedule.startdate<=date and schedule.enddate == None) or schedule.startdate <= date <=schedule.enddate :
+    if dateinrange(date,schedule) :
         if not hasattr(schedule,'repeat_type'):
             return True
         if schedule.repeat_type == REPEAT_TYPE[0][0] or (schedule.repeat_type == REPEAT_TYPE[1][0] and str(date.weekday()) in schedule.repeat_date.split(',') ) or ( schedule.repeat_type == REPEAT_TYPE[2][0] and str(date.day) in schedule.repeat_date.split(',')) or (schedule.repeat_type == REPEAT_TYPE[3][0] and date.strftime('%m%d') == schedule.startdate.strftime('%m%d')):
@@ -18,13 +18,17 @@ def dateisright(date,schedule):
 def dateinrange(date,schedule):
     if (schedule.startdate<=date and schedule.enddate == None) or schedule.startdate <= date <=schedule.enddate:
         return True
+    if not hasattr(schedule,'repeat_type') and schedule.startdate<=date:
+        return True
     return False
 
 
-def adjustRiLiWarning(id,type='Schedule'):
-    wquery = RiLiWarning.objects.filter(type=type,fatherid=id,is_repeat=True,is_ok=True)
-    if 0 == wquery.count():
-        return
+def adjustRiLiWarning(id,type='Schedule',wid=0):
+    wquery = RiLiWarning.objects.filter(type=type,fatherid=id)
+    if wid:
+        wquery=wquery.filter(id=wid)
+    # if 0 == wquery.count():
+    #     return
     if type =='Schedule':
         obj = Schedule.objects.get(pk=id)
     elif type == 'Task':

@@ -32,6 +32,8 @@ urlpatterns = patterns('rili',
     url(r'^delGroup', 'view_group.delGroup'),
     url(r'^warningTask', 'warningcron.warningTask'),
     url(r'^zentaoTask', 'zentaocron.zentaoTask'),
+    url(r'^zentaoStatusTask', 'zentaocron.zentaoStatusTask'),
+    url(r'^zentaoStatusBug', 'zentaocron.zentaoStatusBug'),
 
 
 )
