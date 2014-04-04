@@ -36,6 +36,8 @@ class RTXThread(threading.Thread):
 
     def run (self):
         for username in self.usernamelist:
+            if username:
+                return
             s = urllib.urlencode({'receiver': username, 'msg': self.msg, 'title': self.title, 'delaytime': self.delaytime})
             html = urllib.urlopen(api.get('sendnotify'), s).read()
             if settings.DEBUG:

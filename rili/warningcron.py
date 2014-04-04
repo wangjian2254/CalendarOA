@@ -26,15 +26,16 @@ def warningTask(request):
             schedule = Schedule.objects.get(pk=warning.fatherid)
         else:
             schedule = Task.objects.get(pk=warning.fatherid)
-        subject = u'日程提醒_%s'%schedule.title
+        subject = schedule.title
 
         if warning.warning_type == 'email':
             to_mail_list = set()
             if schedule.author.email:
                 to_mail_list.add(schedule.author.email)
-            for user in schedule.users.all():
-                if user.email:
-                    to_mail_list.add(user.email)
+            if hasattr(schedule,'users'):
+                for user in schedule.users.all():
+                    if user.email:
+                        to_mail_list.add(user.email)
             body = loader.render_to_string('schedul_email.html',
             {'schedule':schedule,'subject':subject, 'today':warning.time+timedelta(minutes=0-warning.timenum) }
             )

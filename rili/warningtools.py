@@ -52,16 +52,17 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
             tempdate = warning.time + datetime.timedelta(minutes=0-warning.timenum)
         else:
             tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
-        while time+tempdate < nowdate or not (dateinrange(tempdate,obj) and dateisright(tempdate,obj)):
-            if hasattr(obj,'repeat_type') and obj.repeat_type == 'yearly':
-                tempdate +=datetime.timedelta(days=365)
-            else:
-                tempdate +=datetime.timedelta(days=1)
-            while not dateisright(tempdate,obj) and dateinrange(tempdate,obj):
-                tempdate +=datetime.timedelta(days=1)
+        if not obj.enddate or obj.enddate > nowdate:
+            while time+tempdate < nowdate or ((time + tempdate > nowdate and  dateinrange(tempdate,obj)) and not dateisright(tempdate,obj)):
+                if hasattr(obj,'repeat_type') and obj.repeat_type == 'yearly':
+                    tempdate +=datetime.timedelta(days=365)
+                else:
+                    tempdate +=datetime.timedelta(days=1)
+                #while time+tempdate < nowdate or ((time + tempdate > nowdate and  dateinrange(tempdate,obj)) and not dateisright(tempdate,obj)):
+                #    tempdate +=datetime.timedelta(days=1)
 
         warning.time = time+tempdate
-        if time+tempdate>nowdate:
+        if time+tempdate>nowdate and dateinrange(tempdate,obj):
             warning.is_repeat = True
             warning.is_ok = False
         else:
