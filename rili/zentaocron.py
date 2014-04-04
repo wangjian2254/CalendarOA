@@ -132,10 +132,9 @@ def zentaoTaskFun(sessiondata,person):
                     taskitem.enddate = endTime
                     taskitem.startdate = startTime
                     taskitem.title =schedultTitle
-                    taskitem.lastUpdateTime=lastEditDate
                     taskitem.desc = schedultDesc
                     taskitem.status = False
-                    taskitem.save()
+                    taskitem.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         taskitem.sendRTX(person.rtxnum)
                 if len(taskitemlist)==0:
@@ -158,10 +157,9 @@ def zentaoTaskFun(sessiondata,person):
                     schedult.group = group
                     schedult.startdate=startTime
                     schedult.enddate=endTime
-                    schedult.lastUpdateTime=lastEditDate
                     schedult.title=schedultTitle
                     schedult.desc=schedultDesc
-                    schedult.save()
+                    schedult.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         schedult.sendRTX(person.rtxnum)
                 if len(schedultlist)==0:
@@ -181,10 +179,9 @@ def zentaoTaskFun(sessiondata,person):
                     taskitem.enddate = None
                     taskitem.startdate = endTime
                     taskitem.title =schedultTitle
-                    taskitem.lastUpdateTime=lastEditDate
                     taskitem.desc = schedultDesc
                     taskitem.status = False
-                    taskitem.save()
+                    taskitem.save(lastUpdateTime=lastEditDate)
                 if len(taskitemlist)==0:
                     addWarning(taskitem)
                     taskitem.adjustWarning()
@@ -238,10 +235,9 @@ def zentaoBugFun(sessiondata,person):
                     taskitem.enddate = endTime
                     taskitem.startdate = startTime
                     taskitem.title =schedultTitle
-                    taskitem.lastUpdateTime=lastEditDate
                     taskitem.desc = schedultDesc
                     taskitem.status = False
-                    taskitem.save()
+                    taskitem.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         taskitem.sendRTX(person.rtxnum)
                 if len(taskitemlist)==0:

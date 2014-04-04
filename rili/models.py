@@ -75,6 +75,10 @@ class Schedule(models.Model):
         adjustRiLiWarning(self.pk, 'Schedule')
 
     def save(self, *args, **kwargs):
+        if kwargs.has_key('lastUpdateTime'):
+            self.lastUpdateTime = kwargs['lastUpdateTime']
+        else:
+            self.lastUpdateTime=datetime.now()
         super(Schedule, self).save(*args, **kwargs)
         self.adjustWarning()
 
@@ -128,6 +132,10 @@ class Task(models.Model):
         adjustRiLiWarning(self.pk, 'Task')
 
     def save(self, *args, **kwargs):
+        if kwargs.has_key('lastUpdateTime'):
+            self.lastUpdateTime = kwargs['lastUpdateTime']
+        else:
+            self.lastUpdateTime=datetime.now()
         super(Task, self).save(*args, **kwargs)
         self.adjustWarning()
 
