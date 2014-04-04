@@ -184,3 +184,8 @@ RTX_HOST = 'http://192.168.101.4'
 ZENTAO_HOST = 'http://pms.zxxsbook.com'
 
 SMS_HOST = ''
+
+APP_HOST = 'http://192.168.101.18:8190'
+
+DEFAULT_WARNINGTYPE=['rtx','email']
+DEFAULT_WARNINGTIME=[540,1020]

@@ -51,8 +51,10 @@ def getTaskByStatus(request):
         if not taskdict.has_key('%s' % task.pk):
             s = {'id': task.pk, 'title': task.title, 'desc': task.desc, 'type': 'task', 'author': task.author.username,
                  'authornickname': task.author.first_name, 'startdate': task.startdate.strftime('%Y%m%d'),
-                 'color': task.color, 'enddate': task.enddate.strftime('%Y%m%d'),
+                 'color': task.color,  'zentaourl':task.getZentaoUrl(),
                  'warningkind': set(), 'warningtime': set(), 'status':task.status}
+            if task.enddate:
+                s['enddate'] = task.enddate.strftime('%Y%m%d')
 
             for warning in RiLiWarning.objects.filter(type='Task',fatherid=task.pk).order_by('type'):
                 s['warningkind'].add(warning.warning_type)
@@ -98,6 +100,7 @@ def updateTask(request):
         return getResult(False, u'请完善信息', None)
     if id:
         task = Task.objects.get(pk=id)
+        RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Task', fatherid=task.pk).delete()
     else:
         task = Task()
     task.title = title
@@ -111,7 +114,7 @@ def updateTask(request):
     task.save()
 
 
-    RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Task', fatherid=task.pk).delete()
+
 
     for wt in wl:
         for w in wtl:
@@ -124,8 +127,7 @@ def updateTask(request):
                 rw.is_repeat = True
                 rw.is_ok = True
                 rw.save()
-    if task.status:
-        adjustRiLiWarning(task.id,'Task')
+    task.save()
     return getResult(True, u'保存成功', task.pk)
 
 
@@ -134,7 +136,6 @@ def updateTask(request):
 def delTask(request):
     id = request.REQUEST.get('id', '')
     schedule = Task.objects.get(pk=id)
-    RiLiWarning.objects.filter(type='Task', fatherid=schedule.pk).delete()
     schedule.delete()
     return getResult(True, u'删除成功', id)
 
@@ -148,7 +149,5 @@ def doTask(request):
         schedule.status=True
     else:
         schedule.status=False
-    RiLiWarning.objects.filter(type='Task', fatherid=schedule.pk).update(is_repeat=False,is_ok=True)
     schedule.save()
-    adjustRiLiWarning(schedule.id,'Task')
     return getResult(True, u'删除成功', id)

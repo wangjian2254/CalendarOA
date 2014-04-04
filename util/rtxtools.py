@@ -19,9 +19,14 @@ class RTXThread(threading.Thread):
 
         self.usernamelist = usernamelist
 
-        self.msg = msg
-
-        self.title = title
+        if isinstance(msg,unicode):
+            self.msg=msg.encode('gbk')
+        else:
+            self.msg = msg
+        if isinstance(title,unicode):
+            self.title=title.encode('gbk')
+        else:
+            self.title = title
 
         self.delaytime = delaytime
 
@@ -37,4 +42,7 @@ class RTXThread(threading.Thread):
                 print html
 
 def send_rtxmsg(usernamelist,msg,title,delaytime=120000):
-    RTXThread(usernamelist,msg,title,delaytime).start()
+    if isinstance(usernamelist,(list,tuple,set)):
+        RTXThread(usernamelist,msg,title,delaytime).start()
+    else:
+        RTXThread([usernamelist],msg,title,delaytime).start()

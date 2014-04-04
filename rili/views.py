@@ -272,7 +272,7 @@ def getScheduleByDate(request):
                         s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'type':'schedule',
                              'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,
                              'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
-                             'repeat_type': schedule.repeat_type,
+                             'repeat_type': schedule.repeat_type, 'zentaourl':schedule.getZentaoUrl(),
                              'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
                              'users': [{'username': u.username, 'nickname': u.first_name} for u in
                                        schedule.users.all()]}
@@ -337,6 +337,7 @@ def updateSchedule(request):
         return getResult(False, u'请完善信息', None)
     if id:
         schedule = Schedule.objects.get(pk=id)
+        RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
     else:
         schedule = Schedule()
     schedule.title = title
@@ -369,8 +370,6 @@ def updateSchedule(request):
     schedule.users = User.objects.filter(username__in=users)
     schedule.save()
 
-    RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
-
     for wt in wl:
         for w in wtl:
             if w:
@@ -382,8 +381,7 @@ def updateSchedule(request):
                 rw.is_repeat = True
                 rw.is_ok = True
                 rw.save()
-    if (schedule.enddate and schedule.enddate>datetime.datetime.now()) or not schedule.enddate:
-        adjustRiLiWarning(schedule.id)
+    schedule.save()
     return getResult(True, u'保存成功', schedule.pk)
 
 
@@ -392,7 +390,6 @@ def updateSchedule(request):
 def delSchedule(request):
     id = request.REQUEST.get('id', '')
     schedule = Schedule.objects.get(pk=id)
-    RiLiWarning.objects.filter(type='Schedule', fatherid=schedule.pk).delete()
     schedule.delete()
     return getResult(True, u'删除成功', id)
 
