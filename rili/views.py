@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from CalendarOA.settings import MEDIA_ROOT
 from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning, Person
-from rili.warningtools import adjustRiLiWarning, dateisright
+from rili.warningtools import adjustRiLiWarning, dateisright, dateinrange
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -267,7 +267,7 @@ def getScheduleByDate(request):
             while date <= enddate:
                 if not result.has_key(date.strftime("%Y%m%d")):
                     result[date.strftime("%Y%m%d")] = []
-                if dateisright(date,schedule):
+                if dateinrange(date,schedule) and dateisright(date,schedule):
                     if not scheduledict.has_key('%s' % schedule.pk):
                         s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'type':'schedule',
                              'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,

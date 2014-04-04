@@ -42,7 +42,7 @@ def getTaskByStatus(request):
         tquery = tquery.filter(status=status)
     else:
         n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
-        tquery = tquery.filter(Q(status=status)|Q(startdate__lte=n, enddate__gte=n))
+        tquery = tquery.filter(Q(status=status)|Q(startdate__gte=n))
     for task in tquery.order_by('startdate'):
         if task.pk in taskpkset:
             continue
