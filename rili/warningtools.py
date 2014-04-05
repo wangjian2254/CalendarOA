@@ -44,8 +44,7 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
 
     for warning in wquery:
         if type == 'Task' and obj.status:
-            warning.is_repeat=False
-            warning.is_ok = True
+            warning.delete()
             continue
         time = datetime.timedelta(minutes=warning.timenum)
         if warning.time:
@@ -65,7 +64,6 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
         if time+tempdate>nowdate and dateinrange(tempdate,obj):
             warning.is_repeat = True
             warning.is_ok = False
+            warning.save()
         else:
-            warning.is_repeat = False
-            warning.is_ok = True
-        warning.save()
+            warning.delete()

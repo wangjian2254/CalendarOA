@@ -20,7 +20,7 @@ def warningTask(request):
         warning.save()
         adjustRiLiWarning(warning.fatherid,warning.type)
 
-    for warning in RiLiWarning.objects.filter(time__gte=startdate,time__lte=nowdate,is_ok=False,warning_type__in=['email','rtx']):
+    for warning in RiLiWarning.objects.filter(time__gte=startdate,time__lte=nowdate,is_ok=False):
 
         if warning.type == 'Schedule':
             schedule = Schedule.objects.get(pk=warning.fatherid)
@@ -28,7 +28,9 @@ def warningTask(request):
             schedule = Task.objects.get(pk=warning.fatherid)
         subject = schedule.title
 
-        if warning.warning_type == 'email':
+        warning_type=subject.warning_type.split(',')
+
+        if 'email' in warning_type:
             to_mail_list = set()
             if schedule.author.email:
                 to_mail_list.add(schedule.author.email)
@@ -41,7 +43,7 @@ def warningTask(request):
             )
 
             send_mail(subject,body,to_mail_list,html="text/html")
-        if warning.warning_type == 'rtx':
+        if 'rtx' in warning_type:
             to_rtx_list = set()
             joinuserlist = set()
             joinuserlist.add(schedule.author.first_name)

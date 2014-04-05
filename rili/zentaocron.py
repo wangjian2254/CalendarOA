@@ -57,22 +57,6 @@ def loginZentao(person):
         else:
             return False
 
-def addWarning(schedule):
-    for wt in DEFAULT_WARNINGTYPE:
-        for w in DEFAULT_WARNINGTIME:
-            if w:
-                rw = RiLiWarning()
-                rw.fatherid = schedule.pk
-                if hasattr(schedule,'repeat_type'):
-                    rw.type = 'Schedule'
-                else:
-                    rw.type = 'Task'
-                rw.warning_type = wt
-                rw.timenum = int(w)
-                rw.is_repeat = True
-                rw.is_ok = True
-                rw.save()
-
 
 def zentaoTaskFun(sessiondata,person):
     tome=urllib.urlopen('%s/index.php?m=my&f=task&type=assignedTo&orderBy=id_desc&recTotal=18&recPerPage=1000&pageID=1&t=json%s'%(ZENTAO_HOST,sessiondata)).read()
@@ -134,12 +118,11 @@ def zentaoTaskFun(sessiondata,person):
                     taskitem.title =schedultTitle
                     taskitem.desc = schedultDesc
                     taskitem.status = False
+                    taskitem.warning_type = ','.join(DEFAULT_WARNINGTYPE)
+                    taskitem.warning_time = ','.join(DEFAULT_WARNINGTIME)
                     taskitem.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         taskitem.sendRTX(person.rtxnum)
-                if len(taskitemlist)==0:
-                    addWarning(taskitem)
-                    taskitem.adjustWarning()
             elif task.get('status') in ('wait','doing'):
                 schedultlist=Schedule.objects.filter(flag='Task',flagid=objid)[:1]
                 if len(schedultlist)==1:
@@ -159,12 +142,12 @@ def zentaoTaskFun(sessiondata,person):
                     schedult.enddate=endTime
                     schedult.title=schedultTitle
                     schedult.desc=schedultDesc
+                    schedult.warning_type = ','.join(DEFAULT_WARNINGTYPE)
+                    schedult.warning_time = ','.join(DEFAULT_WARNINGTIME)
                     schedult.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         schedult.sendRTX(person.rtxnum)
-                if len(schedultlist)==0:
-                    addWarning(schedult)
-                    schedult.adjustWarning()
+
                 taskitemlist=Task.objects.filter(flag='Task',flagid=objid)[:1]
                 if len(taskitemlist)==1:
                     taskitem=taskitemlist[0]
@@ -181,10 +164,10 @@ def zentaoTaskFun(sessiondata,person):
                     taskitem.title =schedultTitle
                     taskitem.desc = schedultDesc
                     taskitem.status = False
+                    taskitem.warning_type = ','.join(DEFAULT_WARNINGTYPE)
+                    taskitem.warning_time = ','.join(DEFAULT_WARNINGTIME)
                     taskitem.save(lastUpdateTime=lastEditDate)
-                if len(taskitemlist)==0:
-                    addWarning(taskitem)
-                    taskitem.adjustWarning()
+
 
 
 def zentaoBugFun(sessiondata,person):
@@ -237,12 +220,12 @@ def zentaoBugFun(sessiondata,person):
                     taskitem.title =schedultTitle
                     taskitem.desc = schedultDesc
                     taskitem.status = False
+                    taskitem.warning_type = ','.join(DEFAULT_WARNINGTYPE)
+                    taskitem.warning_time = ','.join(DEFAULT_WARNINGTIME)
                     taskitem.save(lastUpdateTime=lastEditDate)
                     if person.rtxnum:
                         taskitem.sendRTX(person.rtxnum)
-                if len(taskitemlist)==0:
-                    addWarning(taskitem)
-                    taskitem.adjustWarning()
+
 
 
 

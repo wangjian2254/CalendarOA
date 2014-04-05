@@ -282,16 +282,9 @@ def getScheduleByDate(request):
                             s['time_start'] = schedule.time_start.strftime('%H%M')
                         if schedule.time_end:
                             s['time_end'] = schedule.time_end.strftime('%H%M')
-                        s['warningkind']=set()
-                        s['warningtime']=set()
-                        for warning in RiLiWarning.objects.filter(type='Schedule',fatherid=schedule.pk).order_by('type'):
-                            s['warningkind'].add(warning.warning_type)
-                            if len(s['warningkind'])==0 or (len(s['warningkind'])==1 and warning.warning_type in s['warningkind']):
-                                s['warningtime'].add(warning.timenum)
-                        s['warningkind']=list(s['warningkind'])
-                        s['warningtime']=list(s['warningtime'])
-                        s['warningtime'].sort()
-                        s['warningtime'].reverse()
+
+                        s['warningkind']=schedule.warning_type.split(',')
+                        s['warningtime']=schedule.warning_time.split(',')
                         scheduledict['%s' % schedule.pk] = s
                     result[date.strftime("%Y%m%d")].append(str(schedule.pk))
                 date += datetime.timedelta(days=1)
@@ -337,7 +330,6 @@ def updateSchedule(request):
         return getResult(False, u'请完善信息', None)
     if id:
         schedule = Schedule.objects.get(pk=id)
-        RiLiWarning.objects.filter(warning_type__in=wl).filter(type='Schedule', fatherid=schedule.pk).delete()
     else:
         schedule = Schedule()
     schedule.title = title
@@ -360,7 +352,8 @@ def updateSchedule(request):
         schedule.time_end = datetime.datetime.strptime(time_end, '%H%M')
     else:
         schedule.time_end = None
-
+    schedule.warning_time=''
+    schedule.warning_type=''
     schedule.repeat_type = repeat_type
     schedule.repeat_date = ','.join(repeat_date)
     schedule.color = int(color)
@@ -369,19 +362,23 @@ def updateSchedule(request):
     schedule.save()
     schedule.users = User.objects.filter(username__in=users)
     schedule.save()
-
-    for wt in wl:
-        for w in wtl:
-            if w:
-                rw = RiLiWarning()
-                rw.fatherid = schedule.pk
-                rw.type = 'Schedule'
-                rw.warning_type = wt
-                rw.timenum = int(w)
-                rw.is_repeat = True
-                rw.is_ok = True
-                rw.save()
+    schedule.warning_type = ','.join(wl)
+    schedule.warning_time = ','.join(wtl)
     schedule.save()
+
+    #
+    # for wt in wl:
+    #     for w in wtl:
+    #         if w:
+    #             rw = RiLiWarning()
+    #             rw.fatherid = schedule.pk
+    #             rw.type = 'Schedule'
+    #             rw.warning_type = wt
+    #             rw.timenum = int(w)
+    #             rw.is_repeat = True
+    #             rw.is_ok = True
+    #             rw.save()
+    # schedule.save()
     return getResult(True, u'保存成功', schedule.pk)
 
 

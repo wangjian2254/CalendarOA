@@ -52,18 +52,13 @@ def getTaskByStatus(request):
             s = {'id': task.pk, 'title': task.title, 'desc': task.desc, 'type': 'task', 'author': task.author.username,
                  'authornickname': task.author.first_name, 'startdate': task.startdate.strftime('%Y%m%d'),
                  'color': task.color,  'zentaourl':task.getZentaoUrl(),
-                 'warningkind': set(), 'warningtime': set(), 'status':task.status}
+                  'status':task.status}
             if task.enddate:
                 s['enddate'] = task.enddate.strftime('%Y%m%d')
 
-            for warning in RiLiWarning.objects.filter(type='Task',fatherid=task.pk).order_by('type'):
-                s['warningkind'].add(warning.warning_type)
-                if len(s['warningkind'])==0 or (len(s['warningkind'])==1 and warning.warning_type in s['warningkind']):
-                    s['warningtime'].add(warning.timenum)
-            s['warningkind']=list(s['warningkind'])
-            s['warningtime']=list(s['warningtime'])
-            s['warningtime'].sort()
-            s['warningtime'].reverse()
+
+            s['warningkind']=task.warning_type.split(',')
+            s['warningtime']=task.warning_time.split(',')
             result.append(s)
     return getResult(True, '', result)
 
@@ -111,23 +106,25 @@ def updateTask(request):
 
     task.color = int(color)
     task.author = request.user
+    task.warning_type = ','.join(wl)
+    task.warning_time = ','.join(wtl)
     task.save()
 
 
 
-
-    for wt in wl:
-        for w in wtl:
-            if w:
-                rw = RiLiWarning()
-                rw.fatherid = task.pk
-                rw.type = 'Task'
-                rw.warning_type = wt
-                rw.timenum = int(w)
-                rw.is_repeat = True
-                rw.is_ok = True
-                rw.save()
-    task.save()
+    #
+    # for wt in wl:
+    #     for w in wtl:
+    #         if w:
+    #             rw = RiLiWarning()
+    #             rw.fatherid = task.pk
+    #             rw.type = 'Task'
+    #             rw.warning_type = wt
+    #             rw.timenum = int(w)
+    #             rw.is_repeat = True
+    #             rw.is_ok = True
+    #             rw.save()
+    # task.save()
     return getResult(True, u'保存成功', task.pk)
 
 
