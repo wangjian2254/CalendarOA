@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'rili.views.index'),
     url('^calendar/dav/([a-zA-Z0-9_]{3,30})/user/', 'rili.caldav.davuser'),
+    url('^calendar/([a-zA-Z0-9_]{3,30})/user/', 'rili.caldav.usercal'),
     url('^\.well-known/caldav', 'rili.caldav.know'),
     url(r'^principals/', 'rili.caldav.principals'),
     url(r'^CalendarOA_Flex.html$', 'rili.views.index'),
