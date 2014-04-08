@@ -88,19 +88,16 @@ def joinGroup(request):
             if usertype=='join' and  username!=group.author.username and 0==group.users.filter(username=username).count():
                 group.users.add(User.objects.get(username=username))
                 group.observers.remove(User.objects.get(username=username))
-                group.users.save()
-                group.observers.save()
+                group.save()
             if usertype=='observer' and  username!=group.author.username and 0==group.observers.filter(username=username).count():
                 group.observers.add(User.objects.get(username=username))
                 group.users.remove(User.objects.get(username=username))
-                group.users.save()
-                group.observers.save()
+                group.save()
         elif do == 'out':
             if username!=group.author.username and (1==group.users.filter(username=username).count() or 1==group.observers.filter(username=username).count()):
                 group.users.remove(User.objects.get(username=username))
                 group.observers.remove(User.objects.get(username=username))
-                group.users.save()
-                group.observers.save()
+                group.save()
         else:
             return getResult(False,u'操作不正确',id)
         return getResult(True,u'完成操作',id)

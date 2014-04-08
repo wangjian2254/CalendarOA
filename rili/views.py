@@ -3,10 +3,11 @@
 import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from CalendarOA.settings import MEDIA_ROOT
 from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning, Person
+from rili.szht_amb import regAMB
 from rili.warningtools import adjustRiLiWarning, dateisright, dateinrange
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
@@ -116,9 +117,34 @@ def login(request):
         if request.session.test_cookie_worked():
             request.session.delete_test_cookie()
 
+        return getResult(True, u'登录成功',request.session.keys())
+    else:
+        return getResult(False, u'用户名密码错误',request.session.session_key,500)
+
+
+
+
+def remotelogin(request):
+    username = request.REQUEST.get('username')
+    if username:
+        userlist = User.objects.filter(username=username)[:1]
+        if len(userlist) > 0:
+            user = userlist[0]
+            if not user.is_active:
+                return getResult(False, u'用户已经停止使用。')
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+
+
+        # Okay, security checks complete. Log the user in.
+        auth_login(request, form.get_user())
+
+        if request.session.test_cookie_worked():
+            request.session.delete_test_cookie()
+
         return getResult(True, u'登录成功')
     else:
-        return getResult(False, u'用户名密码错误')
+        raise Http404
 
 
 def regUser(request):
@@ -193,6 +219,7 @@ def saveUserFun(request):
     person.zentao_account = request.REQUEST.get('zentao_account', '')
     person.zentao_password = request.REQUEST.get('zentao_password', '')
     person.save()
+    regAMB(person)
     return {'success': True, 'message': '',
             'result': {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
                        'isaction': user.is_active, 'id': user.pk}}
