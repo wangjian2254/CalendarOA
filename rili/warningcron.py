@@ -28,7 +28,7 @@ def warningTask(request):
             schedule = Task.objects.get(pk=warning.fatherid)
         subject = schedule.title
 
-        warning_type=subject.warning_type.split(',')
+        warning_type=schedule.warning_type.split(',')
 
         if 'email' in warning_type:
             to_mail_list = set()
@@ -54,10 +54,21 @@ def warningTask(request):
                     joinuserlist.add(user.first_name)
                     if hasattr(user,'person'):
                         to_rtx_list.add(user.person.rtxnum)
+            if hasattr(schedule,'group'):
+                for user in schedule.group.users.all():
+                    if hasattr(user,'person'):
+                        to_rtx_list.add(user.person.rtxnum)
+                for user in schedule.group.observers.all():
+                    if hasattr(user,'person'):
+                        to_rtx_list.add(user.person.rtxnum)
+                if hasattr(schedule.group.author,'person'):
+                    to_rtx_list.add(schedule.group.author.person.rtxnum)
 
             startstr = (warning.time+timedelta(minutes=0-warning.timenum)).strftime('%m月%d日 %H:%M').decode('utf-8')
-
-            body = u'日程：%s\n开始时间：%s\n参与人：%s\n内容：%s\n%s'%(schedule.title,startstr,u'、'.join(joinuserlist),schedule.desc,schedule.getRTXUrl())
+            joinstr =u''
+            if joinuserlist:
+                joinstr = u'\n参与人：%s'%u'、'.join(joinuserlist)
+            body = u'日程：%s\n开始时间：%s%s\n内容：%s\n%s'%(schedule.title,startstr,joinstr,schedule.desc,schedule.getRTXUrl())
 
             send_rtxmsg(to_rtx_list,body.encode('gbk'),subject.encode('gbk'))
         warning.is_ok = True

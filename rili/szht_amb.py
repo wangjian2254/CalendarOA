@@ -37,7 +37,7 @@ def regAMB(person):
         schedule.time_start = datetime.datetime.strptime('1700','%H%M')
         schedule.time_end = datetime.datetime.strptime('1730','%H%M')
         schedule.warning_type =','.join(['rtx'])
-        schedule.warning_time =','.join(['0','-540'])
+        schedule.warning_time =','.join(['0','-480'])
         schedule.save()
         schedule = Schedule()
         schedule.title = u'目标卡'
