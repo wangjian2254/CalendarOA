@@ -16,6 +16,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db import transaction
 
 
+
 def index(request):
     if request.method != 'GET':
         r='''<?xml version="1.0"?>

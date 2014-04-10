@@ -41,6 +41,7 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
 
     ds = currentdate.strftime('%Y%m%d%H%M')
     nowdate = datetime.datetime.now()
+    nowday = datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'),'%Y%m%d')
 
     for warning in wquery:
         if type == 'Task' and obj.status:
@@ -51,7 +52,7 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
             tempdate = warning.time + datetime.timedelta(minutes=0-warning.timenum)
         else:
             tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
-        if not obj.enddate or obj.enddate > nowdate:
+        if not obj.enddate or obj.enddate >= nowday:
             while time+tempdate < nowdate or ((time + tempdate > nowdate and  dateinrange(tempdate,obj)) and not dateisright(tempdate,obj)):
                 if hasattr(obj,'repeat_type') and obj.repeat_type == 'yearly':
                     tempdate +=datetime.timedelta(days=365)

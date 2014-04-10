@@ -2,10 +2,11 @@
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db import models
-from datetime import datetime
+from datetime import datetime, timedelta
 # Create your models here.
 from util.rtxtools import send_rtxmsg
-
+timezone = timedelta(hours=23,minutes=59)
+#
 
 REPEAT_TYPE = (('daily', u'每天的'), ('weekly', u'每周的'), ('monthly', u'每月的'), ('yearly', u'每年的'))
 
@@ -90,6 +91,8 @@ class Schedule(models.Model):
             del kwargs['lastUpdateTime']
         else:
             self.lastUpdateTime=datetime.now()
+        if self.enddate and hasattr(self.enddate,'hour')  and getattr(self.enddate,'hour',0)==0:
+            self.enddate += timezone
         RiLiWarning.objects.filter(type='Schedule', fatherid=self.pk).delete()
         super(Schedule, self).save(*args, **kwargs)
         if self.warning_time and self.warning_type:
@@ -161,6 +164,8 @@ class Task(models.Model):
             del kwargs['lastUpdateTime']
         else:
             self.lastUpdateTime=datetime.now()
+        if self.enddate and hasattr(self.enddate,'hour')  and getattr(self.enddate,'hour',0)==0:
+            self.enddate += timezone
         super(Task, self).save(*args, **kwargs)
         if self.warning_time and self.warning_type:
             self.adjustWarning()
