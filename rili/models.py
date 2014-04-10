@@ -72,6 +72,10 @@ class Schedule(models.Model):
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
+    class Meta():
+        unique_together=[('flag','flagid')]
+
+
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning
         for w in self.warning_time.split(','):
@@ -145,6 +149,8 @@ class Task(models.Model):
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
+    class Meta():
+        unique_together=[('flag','flagid')]
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning
         for w in self.warning_time.split(','):
