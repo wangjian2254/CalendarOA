@@ -93,8 +93,15 @@ def zentaoTaskFun(sessiondata,person):
                 lastEditDate = datetime.strptime(str(task.get('assignedDate')),timeformat)
             else:
                 lastEditDate = datetime.strptime(str(task.get('lastEditedDate')),timeformat)
-            startTime = datetime.strptime(str(task.get('estStarted')),dateformat)
-            endTime = datetime.strptime(str(task.get('deadline')),dateformat)
+            try:
+                startTime = datetime.strptime(str(task.get('estStarted')),dateformat)
+            except:
+                startTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
+            try:
+                endTime = datetime.strptime(str(task.get('deadline')),dateformat)
+            except:
+                endTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
+            # endTime = datetime.strptime(str(task.get('deadline')),dateformat)
             schedultTitle = task.get('name')
             schedultDesc = u'项目：%s\n需求：%s\n%s'%(task.get('projectName',u'无'),task.get('storyTitle') if task.get('storyTitle') else u'无',task.get('desc',u'无'))
             schedultDesc = reobj.sub(u'\n',schedultDesc)
