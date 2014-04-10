@@ -285,6 +285,25 @@ def currentUser(request):
     return getResult(True, '', user)
 
 
+def scheduleToDict(schedule):
+    s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'type':'schedule',
+                             'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,
+                             'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
+                             'repeat_type': schedule.repeat_type, 'zentaourl':schedule.getZentaoUrl(),
+                             'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
+                             'users': [{'username': u.username, 'nickname': u.first_name} for u in
+                                       schedule.users.all()]}
+    if schedule.enddate:
+        s['enddate'] = schedule.enddate.strftime('%Y%m%d')
+    if schedule.time_start:
+        s['time_start'] = schedule.time_start.strftime('%H%M')
+    if schedule.time_end:
+        s['time_end'] = schedule.time_end.strftime('%H%M')
+
+    s['warningkind']=schedule.warning_type.split(',')
+    s['warningtime']=schedule.warning_time.split(',')
+    return s
+
 @client_login_required
 def getScheduleByDate(request):
     '''
@@ -328,22 +347,7 @@ def getScheduleByDate(request):
                     result[date.strftime("%Y%m%d")] = []
                 if dateinrange(date,schedule) and dateisright(date,schedule):
                     if not scheduledict.has_key('%s' % schedule.pk):
-                        s = {'id': schedule.pk, 'title': schedule.title, 'desc': schedule.desc, 'type':'schedule',
-                             'group': schedule.group_id, 'author':schedule.author.username, 'authornickname':schedule.author.first_name,
-                             'startdate': schedule.startdate.strftime('%Y%m%d'), 'is_all_day': schedule.is_all_day,
-                             'repeat_type': schedule.repeat_type, 'zentaourl':schedule.getZentaoUrl(),
-                             'repeat_date': schedule.repeat_date.split(','), 'color': schedule.color,
-                             'users': [{'username': u.username, 'nickname': u.first_name} for u in
-                                       schedule.users.all()]}
-                        if schedule.enddate:
-                            s['enddate'] = schedule.enddate.strftime('%Y%m%d')
-                        if schedule.time_start:
-                            s['time_start'] = schedule.time_start.strftime('%H%M')
-                        if schedule.time_end:
-                            s['time_end'] = schedule.time_end.strftime('%H%M')
-
-                        s['warningkind']=schedule.warning_type.split(',')
-                        s['warningtime']=schedule.warning_time.split(',')
+                        s=scheduleToDict(schedule)
                         scheduledict['%s' % schedule.pk] = s
                     result[date.strftime("%Y%m%d")].append(str(schedule.pk))
                 date += datetime.timedelta(days=1)
@@ -416,7 +420,8 @@ def updateSchedule(request):
     schedule.repeat_type = repeat_type
     schedule.repeat_date = ','.join(repeat_date)
     schedule.color = int(color)
-    schedule.author = request.user
+    if not schedule.author_id:
+        schedule.author = request.user
     schedule.group = Group.objects.get(pk=groupid)
     schedule.save()
     schedule.users = User.objects.filter(username__in=users)
@@ -438,7 +443,7 @@ def updateSchedule(request):
     #             rw.is_ok = True
     #             rw.save()
     # schedule.save()
-    return getResult(True, u'保存成功', schedule.pk)
+    return getResult(True, u'保存成功', scheduleToDict(schedule))
 
 
 @client_login_required
