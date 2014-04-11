@@ -34,27 +34,27 @@ class PythonService(win32serviceutil.ServiceFramework):
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
-        self.logger = self._getLogger()
+        # self.logger = self._getLogger()
         self.isAlive = True
 
-    def _getLogger(self):
-        import logging
-        import os
-        import inspect
-
-        logger = logging.getLogger('[CalendarOAService]')
-
-        this_file = inspect.getfile(inspect.currentframe())
-        dirpath = os.path.abspath(os.path.dirname(this_file))
-        handler = logging.FileHandler(os.path.join(dirpath, "service.log"))
-
-        formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler.setFormatter(formatter)
-
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-
-        return logger
+    # def _getLogger(self):
+    #     import logging
+    #     import os
+    #     import inspect
+    #
+    #     logger = logging.getLogger('[CalendarOAService]')
+    #
+    #     this_file = inspect.getfile(inspect.currentframe())
+    #     dirpath = os.path.abspath(os.path.dirname(this_file))
+    #     handler = logging.FileHandler(os.path.join(dirpath, "service.log"))
+    #
+    #     formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    #     handler.setFormatter(formatter)
+    #
+    #     logger.addHandler(handler)
+    #     logger.setLevel(logging.INFO)
+    #
+    #     return logger
 
     def SvcDoRun(self):
         import time, urllib
@@ -67,7 +67,7 @@ class PythonService(win32serviceutil.ServiceFramework):
         for line in open('%s/settings.py'%dirpath,'r'):
             if line.find('APP_HOST')==0:
                 APP_HOST=line.split("'")[1]
-        self.logger.error("start……")
+        # self.logger.error("start……")
         num = 0
         # APP_HOST ='http://192.168.101.18:8190'
         while self.isAlive:
@@ -79,14 +79,14 @@ class PythonService(win32serviceutil.ServiceFramework):
                     urllib.urlopen('%s/ca/zentaoStatusBug'%APP_HOST).read()
                 time.sleep(50)
             except Exception,e:
-                self.logger.error("%s"%e)
-                time.sleep(60*10)
+                # self.logger.error("%s"%e)
+                time.sleep(60*3)
         # 等待服务被停止
         #win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
 
     def SvcStop(self):
         # 先告诉SCM停止这个过程
-        self.logger.error("stop……")
+        # self.logger.error("stop……")
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
         # 设置事件
         win32event.SetEvent(self.hWaitStop)

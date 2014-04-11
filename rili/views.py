@@ -5,10 +5,9 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
-from CalendarOA.settings import MEDIA_ROOT
-from rili.models import Schedule, REPEAT_TYPE, Group, RiLiWarning, Person
+from rili.models import Schedule,  Group,  Person
 from rili.szht_amb import regAMB
-from rili.warningtools import adjustRiLiWarning, dateisright, dateinrange
+from rili.warningtools import  dateisright, dateinrange
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -190,7 +189,7 @@ def regUser(request):
             request.session.delete_test_cookie()
         return getResult(True, '注册成功', None)
     else:
-        return getResult(False, '注册失败', None)
+        return getResult(False, result.get('message'), None)
 
 
 def saveUser(request):
@@ -208,7 +207,7 @@ def saveUserFun(request):
         user.set_password('111111')
         user.username = request.REQUEST.get('username', '')
         if not user.username or User.objects.filter(username=user.username).count() > 0:
-            return getResult(False, u'用户名已经存在', None)
+            return {'success': True, 'message': u'用户名已经存在', 'result': None}
         user.save()
         if 0 == Group.objects.filter(author=user).count():
             g = Group()
