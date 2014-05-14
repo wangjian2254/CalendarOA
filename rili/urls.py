@@ -31,6 +31,15 @@ urlpatterns = patterns('rili',
     url(r'^updateGroup', 'view_group.updateGroup'),
     url(r'^joinGroup', 'view_group.joinGroup'),
     url(r'^delGroup', 'view_group.delGroup'),
+
+
+    url(r'^getUnReadCount', 'view_message.getUnReadCount'),
+    url(r'^flagMessage', 'view_message.flagMessage'),
+    url(r'^getMessageByUser', 'view_message.getMessageByUser'),
+    url(r'^getMessageById', 'view_message.getMessageById'),
+
+
+
     url(r'^warningTask', 'warningcron.warningTask'),
     url(r'^zentaoTask', 'zentaocron.zentaoTask'),
     url(r'^zentaoStatusTask', 'zentaocron.zentaoStatusTask'),

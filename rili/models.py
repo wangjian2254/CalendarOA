@@ -5,16 +5,17 @@ from django.db import models
 from datetime import datetime, timedelta
 # Create your models here.
 from util.rtxtools import send_rtxmsg
-timezone = timedelta(hours=23,minutes=59)
+
+timezone = timedelta(hours=23, minutes=59)
 #
 
 REPEAT_TYPE = (('daily', u'每天的'), ('weekly', u'每周的'), ('monthly', u'每月的'), ('yearly', u'每年的'))
+
 
 def rtxUrl():
     from CalendarOA.settings import APP_HOST
 
     return u'[日程管理查看|%s]' % APP_HOST
-
 
 
 class Person(models.Model):
@@ -65,19 +66,22 @@ class Schedule(models.Model):
     author = models.ForeignKey(User, verbose_name=u'创建者')
     users = models.ManyToManyField(User, related_name=u'schedule_sharedusers', verbose_name=u'参与用户')
     group = models.ForeignKey(Group, verbose_name=u'隶属分组')
-    warning_type = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒类型',help_text=u'方式，方式依次排列')
-    warning_time = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒时间',help_text=u'时间，时间依次排列')
+    warning_type = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒类型',
+                                                     help_text=u'方式，方式依次排列')
+    warning_time = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒时间',
+                                                     help_text=u'时间，时间依次排列')
 
     lastUpdateTime = models.DateTimeField(verbose_name=u'最后修改时间', null=True, blank=True)
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
     class Meta():
-        unique_together=[('flag','flagid')]
+        unique_together = [('flag', 'flagid')]
 
 
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning
+
         for w in self.warning_time.split(','):
             if w:
                 rw = RiLiWarning()
@@ -94,8 +98,8 @@ class Schedule(models.Model):
             self.lastUpdateTime = kwargs['lastUpdateTime']
             del kwargs['lastUpdateTime']
         else:
-            self.lastUpdateTime=datetime.now()
-        if self.enddate and hasattr(self.enddate,'hour')  and getattr(self.enddate,'hour',0)==0:
+            self.lastUpdateTime = datetime.now()
+        if self.enddate and hasattr(self.enddate, 'hour') and getattr(self.enddate, 'hour', 0) == 0:
             self.enddate += timezone
         RiLiWarning.objects.filter(type='Schedule', fatherid=self.pk).delete()
         super(Schedule, self).save(*args, **kwargs)
@@ -125,9 +129,9 @@ class Schedule(models.Model):
 
         return u'%s  %s' % ( rtxUrl(), u)
 
-    def sendRTX(self,rtxnum):
+    def sendRTX(self, rtxnum):
         if rtxnum:
-            send_rtxmsg(rtxnum,(u'%s\n%s'%(self.desc,self.getRTXUrl())),self.title)
+            send_rtxmsg(rtxnum, (u'%s\n%s' % (self.desc, self.getRTXUrl())), self.title)
 
 
 class Task(models.Model):
@@ -137,22 +141,25 @@ class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name=u'任务名称')
     desc = models.CharField(max_length=4000, verbose_name=u'备注')
     startdate = models.DateTimeField(default=datetime.now, db_index=True, verbose_name=u'创建日期')
-    enddate = models.DateTimeField(default=datetime.now, db_index=True,  null=True, blank=True, verbose_name=u'截止日期')
+    enddate = models.DateTimeField(default=datetime.now, db_index=True, null=True, blank=True, verbose_name=u'截止日期')
     status = models.BooleanField(default=False, db_index=True, verbose_name=u'完成状态')
     color = models.IntegerField(verbose_name=u'html颜色值', help_text=u'颜色不同可以区分缓急，可以作为日程的小分组')
     author = models.ForeignKey(User, verbose_name=u'创建者')
-    warning_type = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒类型',help_text=u'方式，方式依次排列')
-    warning_time = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒时间',help_text=u'时间，时间依次排列')
-
+    warning_type = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒类型',
+                                                     help_text=u'方式，方式依次排列')
+    warning_time = models.CommaSeparatedIntegerField(max_length=200, null=True, blank=True, verbose_name=u'提醒时间',
+                                                     help_text=u'时间，时间依次排列')
 
     lastUpdateTime = models.DateTimeField(verbose_name=u'最后修改时间', null=True, blank=True)
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
     class Meta():
-        unique_together=[('flag','flagid')]
+        unique_together = [('flag', 'flagid')]
+
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning
+
         for w in self.warning_time.split(','):
             if w:
                 rw = RiLiWarning()
@@ -169,8 +176,8 @@ class Task(models.Model):
             self.lastUpdateTime = kwargs['lastUpdateTime']
             del kwargs['lastUpdateTime']
         else:
-            self.lastUpdateTime=datetime.now()
-        if self.enddate and hasattr(self.enddate,'hour')  and getattr(self.enddate,'hour',0)==0:
+            self.lastUpdateTime = datetime.now()
+        if self.enddate and hasattr(self.enddate, 'hour') and getattr(self.enddate, 'hour', 0) == 0:
             self.enddate += timezone
         super(Task, self).save(*args, **kwargs)
         if self.warning_time and self.warning_type:
@@ -197,9 +204,10 @@ class Task(models.Model):
                 return '%s/index.php?m=bug&f=view&bugID=%s' % (ZENTAO_HOST, self.flagid)
         return None
 
-    def sendRTX(self,rtxnum):
+    def sendRTX(self, rtxnum):
         if rtxnum:
-            send_rtxmsg(rtxnum,(u'%s\n%s'%(self.desc,self.getRTXUrl())),self.title)
+            send_rtxmsg(rtxnum, (u'%s\n%s' % (self.desc, self.getRTXUrl())), self.title)
+
 
 class RiLiWarning(models.Model):
     '''
@@ -227,7 +235,7 @@ class UrlCheck(models.Model):
     timeout = models.DateTimeField(verbose_name=u'过期时间', help_text=u'过期后不可再用', null=True, blank=True)
 
 
-class RiLiMessage(models.Model):
+class OAMessage(models.Model):
     '''
     站内短消息
     '''
@@ -237,15 +245,15 @@ class RiLiMessage(models.Model):
     desc = models.TextField(verbose_name=u'内容', null=True, blank=True)
     createtime = models.DateTimeField(auto_created=True, verbose_name=u'创建日期')
     flag = models.BooleanField(default=True, verbose_name=u'是否草稿')
-    fatherMessage = models.ForeignKey('RiLiMessage', verbose_name=u'父级信息', null=True, blank=True)
+    fatherMessage = models.ForeignKey('OAMessage', verbose_name=u'父级信息', null=True, blank=True)
 
     def send(self):
         if self.flag:
             self.flag = True
             self.save()
-            return (False,u'草稿不可以发送')
+            return (False, u'草稿不可以发送')
         elif self.t.count() == 0:
-            return (False,u'没有指定接收人')
+            return (False, u'没有指定接收人')
         else:
             for user in self.t.all():
                 receiveMessage = ReceiveMessage()
@@ -253,13 +261,11 @@ class RiLiMessage(models.Model):
                 receiveMessage.user = user
                 receiveMessage.is_read = False
                 receiveMessage.save()
-            return (True,u'发送成功')
-
-
+            return (True, u'发送成功')
 
 
 class ReceiveMessage(models.Model):
-    message = models.ForeignKey(RiLiMessage)
+    message = models.ForeignKey(OAMessage)
     user = models.ForeignKey(User, verbose_name=u'接收人')
     is_read = models.BooleanField(default=False, verbose_name=u'是否已读')
 

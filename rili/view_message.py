@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
 from rili.forms import MessageForm
-from rili.models import Contacts, RiLiMessage, ReceiveMessage
+from rili.models import Contacts, OAMessage, ReceiveMessage
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 
@@ -20,7 +20,7 @@ def getUnReadMessageCount(user):
 @client_login_required
 def getUnReadCount(request):
     num = getUnReadMessageCount(request.user)
-    return getResult(True, '', num)
+    return getResult(True, '', '%s'%num)
 
 
 @client_login_required
@@ -29,7 +29,7 @@ def updateMessage(request):
         with transaction.commit_on_success():
             pk = request.REQUEST.get('id', '')
             if pk:
-                messageForm = MessageForm(request.POST, RiLiMessage.objects.get(pk=pk))
+                messageForm = MessageForm(request.POST, OAMessage.objects.get(pk=pk))
             else:
                 messageForm = MessageForm(request.POST)
 
@@ -100,11 +100,11 @@ def messageToDict(fm):
 def getMessageById(request):
     pk = request.REQUEST.get('id')
     if 0 < ReceiveMessage.objects.filter(user=request.user, message=pk).count():
-        m = RiLiMessage.objects.get(pk=pk)
+        m = OAMessage.objects.get(pk=pk)
         if m.fatherMessage_id:
             fm = m.fatherMessage
             l = []
-            for message in RiLiMessage.objects.filter(fatherMessage=fm).order_by('-id'):
+            for message in OAMessage.objects.filter(fatherMessage=fm).order_by('-id'):
                 l.append(messageToDict(message))
             l.append(messageToDict(fm))
             return getResult(True, u'获取信息成功', l)

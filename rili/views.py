@@ -119,6 +119,10 @@ def menu(request):
 
                         <menuitem label='日程管理' mod='calendar'></menuitem>
                     </menu>
+                    <menu mod='myMenu1' label='消息管理'>
+
+                        <menuitem label='站内消息' mod='message'></menuitem>
+                    </menu>
                 </root>
         '''
 
@@ -421,7 +425,8 @@ def updateSchedule(request):
     schedule.color = int(color)
     if not schedule.author_id:
         schedule.author = request.user
-    schedule.group = Group.objects.get(pk=groupid)
+    if schedule.author_id  == request.user.pk:
+        schedule.group = Group.objects.get(pk=groupid)
     schedule.save()
     schedule.users = User.objects.filter(username__in=users)
     schedule.save()
