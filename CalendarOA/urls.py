@@ -18,6 +18,8 @@ urlpatterns = patterns('',
 
     url(r'^CalendarOA_Flex.html$', 'rili.views.index'),
     url(r'^ca/', include('rili.urls')),
+    url(r'^oamessage/', include('oamessage.urls')),
+    url(r'^toupiao/', include('toupiao.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

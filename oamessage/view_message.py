@@ -1,13 +1,13 @@
 #coding=utf-8
 #Date: 11-12-8
 #Time: 下午10:28
-from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Q
-from rili.forms import MessageForm
-from rili.models import Contacts, OAMessage, ReceiveMessage
+
+from oamessage.forms import MessageForm
+from models import OAMessage, ReceiveMessage
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
+
 
 __author__ = u'王健'
 
