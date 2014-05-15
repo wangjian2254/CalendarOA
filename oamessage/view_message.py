@@ -89,7 +89,10 @@ def getMessageByUser(request):
 
     totalnum = messagequery.count()
     resultlist = []
+    messageids=[]
     for m in messagequery[start:limit]:
+        messageids.append(m.message_id)
+    for m in OAMessage.objects.filter(pk__in=messageids) :
         s = {'id': m.pk, 'mid': m.message_id, 'title': m.message.title, 'mfid': m.message.fatherMessage_id, 'authorname':m.message.f.first_name, 'author':m.message.f.username,
              'is_read': m.is_read, 'datetime': m.message.createtime.strftime("%Y/%m/%d %H:%M")}
         resultlist.append(s)
