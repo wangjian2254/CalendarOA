@@ -5,10 +5,10 @@ Created on 2011-3-19
 @author: 王健
 '''
 from django.conf.urls import patterns
-from toupiao.views import  savesubjectoption, showsubjectoption, showTouPiao, toupiaoPage, toupiaoResult, endnewslist,toupiaoerror, toupiaoExcel
+from kaoshi.views import  savesubjectoption, showsubjectoption, showTouPiao, toupiaoPage, toupiaoResult, endnewslist,toupiaoerror, toupiaoExcel
 
 
-urlpatterns = patterns('toupiao',
+urlpatterns = patterns('kaoshi',
 
                        (r'^savesubjectoption/$', savesubjectoption),
                        (r'^showsubjectoption/$', showsubjectoption),
