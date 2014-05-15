@@ -22,8 +22,6 @@ class OAMessage(models.Model):
 
     def send(self):
         if self.flag:
-            self.flag = True
-            self.save()
             return (False, u'草稿不可以发送')
         elif self.t.count() == 0:
             return (False, u'没有指定接收人')

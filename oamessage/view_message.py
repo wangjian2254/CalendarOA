@@ -13,18 +13,27 @@ __author__ = u'王健'
 
 
 def getUnReadMessageCount(user):
+    '''
+    查询未读信息数量，根据用户
+    '''
     num = ReceiveMessage.objects.filter(user=user, is_read=False).count()
     return num
 
 
 @client_login_required
 def getUnReadCount(request):
+    '''
+    查询未读信息数量
+    '''
     num = getUnReadMessageCount(request.user)
     return getResult(True, '', '%s'%num)
 
 
 @client_login_required
 def updateMessage(request):
+    '''
+    修改、新建 信息，是保存为草稿，还是直接发送
+    '''
     try:
         with transaction.commit_on_success():
             pk = request.REQUEST.get('id', '')
@@ -81,7 +90,7 @@ def getMessageByUser(request):
     totalnum = messagequery.count()
     resultlist = []
     for m in messagequery[start:limit]:
-        s = {'id': m.pk, 'mid': m.message_id, 'title': m.message.title, 'mfid': m.message.fatherMessage_id,
+        s = {'id': m.pk, 'mid': m.message_id, 'title': m.message.title, 'mfid': m.message.fatherMessage_id, 'authorname':m.message.f.first_name, 'author':m.message.f.username,
              'is_read': m.is_read, 'datetime': m.message.createtime.strftime("%Y/%m/%d %H:%M")}
         resultlist.append(s)
     return getResult(True, u'获取信息成功', {'limit': limit, 'start': start, 'total': totalnum, 'list': resultlist})
