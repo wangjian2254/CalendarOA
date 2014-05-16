@@ -112,9 +112,11 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'model_history.threadlocals.ThreadLocals',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -140,6 +142,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'rili',
     'oamessage',
+    'model_history',
 )
 
 # A sample logging configuration. The only tangible logging

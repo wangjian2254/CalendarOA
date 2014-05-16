@@ -210,6 +210,7 @@ def saveUserFun(request):
         user = User()
         user.set_password('111111')
         user.username = request.REQUEST.get('username', '')
+        user.first_name = request.REQUEST.get('truename', u'游客')
         if not user.username or User.objects.filter(username=user.username).count() > 0:
             return {'success': True, 'message': u'用户名已经存在', 'result': None}
         user.save()

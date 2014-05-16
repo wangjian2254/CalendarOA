@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from datetime import datetime, timedelta
 # Create your models here.
+from model_history.history import ModelWithHistory
 from util.rtxtools import send_rtxmsg
 
 timezone = timedelta(hours=23, minutes=59)
@@ -17,21 +18,34 @@ def rtxUrl():
     return u'[日程管理查看|%s]' % APP_HOST
 
 
-class Person(models.Model):
+class Person(ModelWithHistory):
     user = models.OneToOneField(User, verbose_name=u'账户')
     telphone = models.CharField(max_length=15, db_index=True, null=True, blank=True, verbose_name=u'手机号码')
-    rtxnum = models.CharField(max_length=30, unique=True, db_index=True, null=True, blank=True, verbose_name=u'腾讯通账号')
-    zentao_account = models.CharField(max_length=30, unique=True, db_index=True, null=True, blank=True,
+    rtxnum = models.CharField(max_length=30, db_index=True, null=True, blank=True, verbose_name=u'腾讯通账号')
+    zentao_account = models.CharField(max_length=30, db_index=True, null=True, blank=True,
                                       verbose_name=u'禅道账号')
     zentao_password = models.CharField(max_length=30, db_index=True, null=True, blank=True, verbose_name=u'禅道密码')
 
+    def __unicode__(self):
+        return u'%s:%s 的个人信息'%(self.user.first_name,self.user.username)
+    class History:
+        model = True # save model changes into admin's LogEntry table
+        fields = ('user', 'telphone','rtxnum','zentao_account','zentao_password') # save these fields history to AttributeLogEntry table
 
-class Contacts(models.Model):
+
+class Contacts(ModelWithHistory):
     user = models.OneToOneField(User, verbose_name=u'通信录隶属')
     users = models.ManyToManyField(User, related_name=u'contacts_list', verbose_name=u'通信录列表')
 
 
-class Group(models.Model):
+    def __unicode__(self):
+        return u'%s:%s 的通信录'%(self.user.first_name,self.user.username)
+    class History:
+        model = True
+        fields = ('user', 'users')
+
+
+class Group(ModelWithHistory):
     '''
     日程分组
     '''
@@ -43,8 +57,13 @@ class Group(models.Model):
     observers = models.ManyToManyField(User, related_name=u'group_sharedobservers', verbose_name=u'观察者用户',
                                        help_text=u'只能看到不能编辑')
 
+    def __unicode__(self):
+        return u'%s:%s 的日程分组'%(self.author.first_name,self.author.username)
+    class History:
+        model = True
+        fields = ('name','color','author', 'users','observers')
 
-class Schedule(models.Model):
+class Schedule(ModelWithHistory):
     '''
     日程
     '''
@@ -133,7 +152,7 @@ class Schedule(models.Model):
             send_rtxmsg(rtxnum, (u'%s\n%s' % (self.desc, self.getRTXUrl())), self.title)
 
 
-class Task(models.Model):
+class Task(ModelWithHistory):
     '''
     任务
     '''
@@ -208,7 +227,7 @@ class Task(models.Model):
             send_rtxmsg(rtxnum, (u'%s\n%s' % (self.desc, self.getRTXUrl())), self.title)
 
 
-class RiLiWarning(models.Model):
+class RiLiWarning(ModelWithHistory):
     '''
     提醒，为日程或任务 创建的提醒
     '''
@@ -223,7 +242,7 @@ class RiLiWarning(models.Model):
     is_ok = models.BooleanField(default=False, db_index=True, verbose_name=u'是否提醒过')
 
 
-class UrlCheck(models.Model):
+class UrlCheck(ModelWithHistory):
     '''
     有些通过url连接 进行操作的功能，如：邀请某个人加入的超链接，这些超链接，为了防止被仿冒，增加了校验数据库，对url 和 参数进行提前存储
     '''
