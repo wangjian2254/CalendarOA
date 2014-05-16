@@ -17,82 +17,6 @@ from django.db import transaction
 
 
 def index(request):
-    if request.method != 'GET':
-        r='''<?xml version="1.0"?>
-<multistatus xmlns="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
-  <response>
-    <href>/</href>
-    <propstat>
-      <prop>
-        <resourcetype>
-          <C:calendar />
-          <collection />
-        </resourcetype>
-      </prop>
-      <status>HTTP/1.1 200 OK</status>
-    </propstat>
-    <propstat>
-      <prop>
-        <current-user-principal>
-          <unauthenticated />
-        </current-user-principal>
-        <principal-URL>
-          <unauthenticated />
-        </principal-URL>
-      </prop>
-      <status>HTTP/1.1 404 Not Found</status>
-    </propstat>
-  </response>
-</multistatus>
-        '''
-        h= HttpResponse(r)
-        h.status_code = 207
-        return h
-#
-#         with open('%s/index.txt'%MEDIA_ROOT,'w') as f:
-#             f.write(request.body)
-#         r='''<D:multistatus xmlns:CS="http://calendarserver.org/ns/" xmlns:C="urn:ietf:params:xml:ns:caldav" xmlns:D="DAV:">
-#  <D:response>
-#   <D:href>/calendar/dav/wangjian/user/</D:href>
-#   <D:propstat>
-#    <D:prop>
-#     <D:displayname>wangjian</D:displayname>
-#     <CS:dropbox-home-URL xmlns:ns4="http://apple.com/ns/ical/">/calendar/dav/wangjian/user/</CS:dropbox-home-URL>
-#     <CS:notification-URL xmlns:ns4="http://apple.com/ns/ical/">/calendar/dav/wangjian/user/</CS:notification-URL>
-#     <C:calendar-home-set xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>/calendar/r/dav/calendar/wangjian/</D:href>
-#     </C:calendar-home-set>
-#     <C:calendar-user-address-set xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>mailto:wangjian</D:href>
-#     </C:calendar-user-address-set>
-#     <C:schedule-inbox-URL xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>/calendar/r/dav/calendar/wangjian/inbox/</D:href>
-#     </C:schedule-inbox-URL>
-#     <C:schedule-outbox-URL xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>/calendar/r/dav/calendar/wangjian/outbox/</D:href>
-#     </C:schedule-outbox-URL>
-#     <D:principal-collection-set xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>/calendar/r/dav/users/</D:href>
-#     </D:principal-collection-set>
-#     <D:principal-URL xmlns:ns4="http://apple.com/ns/ical/">
-#      <D:href>/calendar/dav/wangjian/user/</D:href>
-#     </D:principal-URL>
-#    </D:prop>
-#    <D:status>HTTP/1.1 200 OK</D:status>
-#   </D:propstat>
-#   <D:propstat>
-#    <D:prop>
-#     <B:allow ed-calendar-component-set xmlns:A="DAV:" xmlns:B="http://calendarserver.org/ns/"/>
-#     <A:current-user-principal xmlns:A="DAV:"/>
-#     <B:email-address-set xmlns:A="DAV:" xmlns:B="http://calendarserver.org/ns/"/>
-#     <A:resource-id xmlns:A="DAV:"/>
-#    </D:prop>
-#    <D:status>HTTP/1.1 404 Not Found</D:status>
-#   </D:propstat>
-#  </D:response>
-# </D:multistatus>
-#         '''
-#         return HttpResponse(r)
     url = 'http://' + request.META['HTTP_HOST'] + '/static/swf/'
     return render_to_response('index.html', {'url': url, 'p': datetime.datetime.now()})
 
@@ -111,17 +35,17 @@ def menu(request):
         <?xml version='1.0' encoding='utf-8'?>
                 <root>
                     <menu mod='myMenu1' label='分组和通信录'>
-
                         <menuitem label='常用联系人' mod='contact'></menuitem>
                         <menuitem label='分组管理' mod='group'></menuitem>
                     </menu>
                     <menu mod='myMenu1' label='日程管理'>
-
                         <menuitem label='日程管理' mod='calendar'></menuitem>
                     </menu>
                     <menu mod='myMenu1' label='消息管理'>
-
                         <menuitem label='站内消息' mod='message'></menuitem>
+                    </menu>
+                    <menu mod='myMenu1' label='系统管理'>
+                        <menuitem label='日志' mod='log'></menuitem>
                     </menu>
                 </root>
         '''

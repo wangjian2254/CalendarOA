@@ -55,6 +55,7 @@ def updateMessage(request):
 
 
 @client_login_required
+@transaction.commit_on_success
 def flagMessage(request):
     try:
         with transaction.commit_on_success():
