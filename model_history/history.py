@@ -24,9 +24,12 @@ def prepare_fields(instance):
     for field_name in instance._history['fields']:
         if all.has_key(field_name):
             modelfield = all[field_name]
-            value = getattr(instance, modelfield.attname)
+            value = getattr(instance, modelfield.name)
             if value is None: value = ''
-            output[field_name] = unicode(value)
+            if isinstance(value,User):
+                output[field_name] = u'"%s : %s"'%(value.first_name,value.username)
+            else:
+                output[field_name] = unicode(value)
         # elif many.has_key(field_name):
         #     modelfield = many[field_name]
         #     value = set()
@@ -81,9 +84,8 @@ def add_signals(cls):
                 if before!=after:
                     if hasattr(instance.History,'%s_change_message'%name):
                         before,after = getattr(instance.History, '%s_change_message'%name)(instance,name,pre_fields,post_fields)
-
-                    instance._create_field_change_message(verbose_name_dict.get(name,''), before, after)
-            #print 'checking done.'
+                    if before and after:
+                        instance._create_field_change_message(verbose_name_dict.get(name,''), before, after)
 
         if instance._history.get('model', False) and hasattr(instance,'_field_change_message_list'):
             instance._create_log_entry(instance._history_action)
@@ -92,9 +94,9 @@ def add_signals(cls):
         if action in ('pre_add','pre_remove','post_clear'):
             return
         for field in instance.__class__._meta.many_to_many:
-                if sender == getattr(instance.__class__,field.attname).through:
+                if sender == getattr(instance.__class__,field.name).through:
                     name = field.verbose_name
-                    attrname = field.attname
+                    attrname = field.name
 
         if action == 'post_add':
             msg =u'%s 增加：'%name
@@ -104,7 +106,6 @@ def add_signals(cls):
         if action in ('post_add','post_remove'):
             for v in kwargs.get('model').objects.filter(pk__in=kwargs.get('pk_set')):
                 entrys.add(v)
-
         else :
             for v in getattr(instance,attrname).all():
                 entrys.add(v)
@@ -121,7 +122,7 @@ def add_signals(cls):
     signals.post_save.connect(post_save, sender=cls, weak=False)
     signals.post_delete.connect(post_delete, sender=cls, weak=False)
     for field in cls._meta.many_to_many:
-        signals.m2m_changed.connect(history_m2m_change,sender=getattr(cls,field.attname).through, weak=False)
+        signals.m2m_changed.connect(history_m2m_change,sender=getattr(cls,field.name).through, weak=False)
 
 class ModelWithHistoryBase(ModelBase):
     def __new__(cls, name, bases, attrs):
