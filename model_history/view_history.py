@@ -33,7 +33,8 @@ def getMyHistory(request):
         for log in loglist:
             l.append({'id': log.pk, 'action_time': log.action_time.strftime("%Y-%m-%d %H:%M:%S"), 'username': log.user.username,
                       'nickname': log.user.first_name, 'action_flag': showActionFlag(log.action_flag),
-                      'actionflag': log.action_flag, 'object_repr': log.object_repr})
+                      'object_type':log.content_type.model_class()._meta.verbose_name,
+                      'actionflag': log.action_flag, 'object_repr': log.object_repr, 'change_message':log.change_message})
         return getResult(True,u'获取到日志',l)
     else:
         return getResult(False, u'请提供查询范围')

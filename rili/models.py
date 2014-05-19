@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from datetime import datetime, timedelta
 # Create your models here.
+from django.db.models.signals import m2m_changed
 from model_history.history import ModelWithHistory
 from util.rtxtools import send_rtxmsg
 
@@ -27,11 +28,13 @@ class Person(ModelWithHistory):
     zentao_password = models.CharField(max_length=30, db_index=True, null=True, blank=True, verbose_name=u'禅道密码')
 
     def __unicode__(self):
-        return u'%s:%s 的个人信息'%(self.user.first_name,self.user.username)
+        return u'%s:%s'%(self.user.first_name,self.user.username)
     class History:
         model = True # save model changes into admin's LogEntry table
         fields = ('user', 'telphone','rtxnum','zentao_account','zentao_password') # save these fields history to AttributeLogEntry table
 
+    class Meta():
+        verbose_name=u'个人信息'
 
 class Contacts(ModelWithHistory):
     user = models.OneToOneField(User, verbose_name=u'通信录隶属')
@@ -39,11 +42,17 @@ class Contacts(ModelWithHistory):
 
 
     def __unicode__(self):
-        return u'%s:%s 的通信录'%(self.user.first_name,self.user.username)
+        return u'%s:%s'%(self.user.first_name,self.user.username)
     class History:
         model = True
         fields = ('user', 'users')
 
+        @staticmethod
+        def users_change_message(users):
+            return [u'%s : %s'%(u.first_name,u.username) for u in users]
+
+    class Meta():
+        verbose_name=u'通信录'
 
 class Group(ModelWithHistory):
     '''
@@ -58,10 +67,21 @@ class Group(ModelWithHistory):
                                        help_text=u'只能看到不能编辑')
 
     def __unicode__(self):
-        return u'%s:%s 的日程分组'%(self.author.first_name,self.author.username)
+        return u'%s'%(self.name,)
     class History:
         model = True
         fields = ('name','color','author', 'users','observers')
+
+        @staticmethod
+        def users_change_message(users):
+            return [u'%s : %s'%(u.first_name,u.username) for u in users]
+
+        @staticmethod
+        def observers_change_message(users):
+            return [u'%s : %s'%(u.first_name,u.username) for u in users]
+
+    class Meta():
+        verbose_name=u'日程分组'
 
 class Schedule(ModelWithHistory):
     '''
@@ -93,9 +113,86 @@ class Schedule(ModelWithHistory):
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
+    def __unicode__(self):
+        return u'%s'%(self.title,)
+    class History:
+        model = True
+        fields = ('title','desc','startdate','enddate','is_all_day','time_start','time_end','repeat_type','repeat_date',
+                  'color','author','users','group','warning_type','warning_time')
+
+        @staticmethod
+        def users_change_message(users):
+            return [u'%s : %s'%(u.first_name,u.username) for u in users]
+
+        @staticmethod
+        def warning_time_change_message(instence,name,oldvalue,value):
+            ov = []
+            for mins in oldvalue[name].split(','):
+                if not mins:
+                    continue
+                mins = int(mins)
+                if oldvalue['is_all_day']=='True':
+
+                    d = 0-divmod(mins,24*60.0)[0]
+                    h,m = divmod(divmod(mins+d*24*60,24*60)[1],60.0)
+                    # m = divmod(mins+d*24*60,60)[1]
+                    if d>0:
+                        o = u'提前%d天,%d:%d'%(d,h,m)
+                    else:
+                        o = u'%d:%d'%(h,m)
+                else:
+                    if divmod(mins,7*24*60)[1]==0:
+                        o = u'提前%d周'%divmod(mins,7*24*60)[0]
+                    elif divmod(mins,24*60)[1]==0:
+                        o = u'提前%d天'%divmod(mins,24*60)[0]
+                    elif divmod(mins,60)[1]==0:
+                        o = u'提前%d小时'%divmod(mins,60)[0]
+                    else:
+                        o = u'提前%d分钟'%divmod(mins,60)[1]
+                ov.append(o)
+
+            vv = []
+            for mins in value[name].split(','):
+                if not mins:
+                    continue
+                mins = int(mins)
+                if instence.is_all_day:
+                    d = 0-divmod(mins,24*60.0)[0]
+                    h,m = divmod(divmod(mins+d*24*60,24*60)[1],60.0)
+                    # m = divmod(mins+d*24*60,60)[1]
+                    if d>0:
+                        v = u'提前%d天,%d:%d'%(d,h,m)
+                    else:
+                        v = u'%d:%d'%(h,m)
+                else:
+                    if divmod(mins,7*24*60)[1]==0:
+                        v = u'提前%d周'%divmod(mins,7*24*60)[0]
+                    elif divmod(mins,24*60)[1]==0:
+                        v = u'提前%d天'%divmod(mins,24*60)[0]
+                    elif divmod(mins,60)[1]==0:
+                        v = u'提前%d小时'%divmod(mins,60)[0]
+                    else:
+                        v = u'提前%d分钟'%divmod(mins,60)[1]
+                vv.append(v)
+            return u'、'.join(ov),u'、'.join(vv)
+
+        @staticmethod
+        def is_all_day_change_message(instence,name,oldvalue,value):
+
+            if oldvalue[name]=='True':
+                o = u'全天'
+            else:
+                o = u'非全天'
+            if value[name] == 'True':
+                v = u'全天'
+            else:
+                v = u'非全天'
+            return o,v
+
+
     class Meta():
         unique_together = [('flag', 'flagid')]
-
+        verbose_name=u'日程'
 
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning

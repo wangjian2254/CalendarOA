@@ -31,15 +31,10 @@ def joinContacts(request):
         contact = Contacts()
         contact.user = request.user
         contact.save()
-    for username in usernamelist:
-        if do =='join':
-                if username!=request.user.username and 0==contact.users.filter(username=username).count():
-                    contact.users.add(User.objects.get(username=username))
-                    contact.save()
-        elif do == 'out':
-            if username!=request.user.username and 1==contact.users.filter(username=username).count():
-                contact.users.remove(User.objects.get(username=username))
-                contact.save()
+    if do =='join':
+            contact.users.add(*User.objects.filter(username__in=usernamelist))
+    elif do == 'out':
+            contact.users.remove(*User.objects.filter(username__in=usernamelist))
     return getResult(True, '修改成功',True)
 
 
