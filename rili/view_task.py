@@ -22,44 +22,47 @@ def getTaskByStatus(request):
     如果没有则返回空
     获取日期间的任务
     '''
-    status = request.REQUEST.get('status', 'false')
-    today = request.REQUEST.get('today', 'false')
-    user = request.user
-    if status=='false':
-        status=False
-    else:
-        status=True
-    if today=='false':
-        today=False
-    else:
-        today=True
+    try:
+        status = request.REQUEST.get('status', 'false')
+        today = request.REQUEST.get('today', 'false')
+        user = request.user
+        if status=='false':
+            status=False
+        else:
+            status=True
+        if today=='false':
+            today=False
+        else:
+            today=True
 
-    result = []
-    taskdict = {}
-    taskpkset = set()
-    tquery =Task.objects.filter(author=user)
-    if today:
-        tquery = tquery.filter(status=status)
-    else:
-        n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
-        tquery = tquery.filter(Q(status=status)|Q(startdate__gte=n))
-    for task in tquery.order_by('startdate'):
-        if task.pk in taskpkset:
-            continue
-        taskpkset.add(task.pk)
+        result = []
+        taskdict = {}
+        taskpkset = set()
+        tquery =Task.objects.filter(author=user)
+        if today:
+            tquery = tquery.filter(status=status)
+        else:
+            n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
+            tquery = tquery.filter(Q(status=status)|Q(startdate__gte=n))
+        for task in tquery.order_by('startdate'):
+            if task.pk in taskpkset:
+                continue
+            taskpkset.add(task.pk)
 
-        if not taskdict.has_key('%s' % task.pk):
-            s = {'id': task.pk, 'title': task.title, 'desc': task.desc, 'type': 'task', 'author': task.author.username,
-                 'authornickname': task.author.first_name, 'startdate': task.startdate.strftime('%Y%m%d'),
-                 'color': task.color,  'zentaourl':task.getZentaoUrl(),
-                  'status':task.status}
-            if task.enddate:
-                s['enddate'] = task.enddate.strftime('%Y%m%d')
+            if not taskdict.has_key('%s' % task.pk):
+                s = {'id': task.pk, 'title': task.title, 'desc': task.desc, 'type': 'task', 'author': task.author.username,
+                     'authornickname': task.author.first_name, 'startdate': task.startdate.strftime('%Y%m%d'),
+                     'color': task.color,  'zentaourl':task.getZentaoUrl(),
+                      'status':task.status}
+                if task.enddate:
+                    s['enddate'] = task.enddate.strftime('%Y%m%d')
 
 
-            s['warningkind']=task.warning_type.split(',')
-            s['warningtime']=task.warning_time.split(',')
-            result.append(s)
+                s['warningkind']=task.warning_type.split(',')
+                s['warningtime']=task.warning_time.split(',')
+                result.append(s)
+    except Exception,e:
+        raise e
     return getResult(True, '', result)
 
 
