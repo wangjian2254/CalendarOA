@@ -1,4 +1,5 @@
 #coding=utf-8
+from django.contrib.admin.models import ADDITION
 from django.contrib.auth.models import User
 from django.db import models
 from datetime import datetime, timedelta
@@ -127,8 +128,7 @@ class Schedule(ModelWithHistory):
         model = True
         fields = (
             'title', 'desc', 'startdate', 'enddate', 'is_all_day', 'time_start', 'time_end', 'repeat_type',
-            'repeat_date',
-            'color', 'author', 'users', 'group', 'warning_type', 'warning_time')
+            'repeat_date', 'color', 'author', 'users', 'group', 'warning_type', 'warning_time')
 
         @staticmethod
         def users_change_message(users):
@@ -147,6 +147,38 @@ class Schedule(ModelWithHistory):
                 return None, None
             else:
                 return oldvalue[name], value[name]
+        @staticmethod
+        def startdate_change_message(instence, name, oldvalue, value):
+            o = u''
+            v = u''
+            if oldvalue[name]:
+                o = oldvalue[name][:-9]
+            if value[name]:
+                v = value[name][:-9]
+            return o,v
+
+        @staticmethod
+        def enddate_change_message(instence, name, oldvalue, value):
+            if instence._history_action == ADDITION:
+                o = u''
+            else:
+                o = u'永远'
+            v = u'永远'
+            if oldvalue[name]:
+                o = oldvalue[name][:-9]
+            if value[name]:
+                v = value[name][:-9]
+            return o,v
+
+        @staticmethod
+        def color_change_message(instence, name, oldvalue, value):
+            o=''
+            v=''
+            if oldvalue[name]:
+                o = u'#06x'%int(oldvalue[name])
+            if value[name]:
+                v = u'#06x'%int(value[name])
+            return o,v
 
         @staticmethod
         def repeat_type_change_message(instence, name, oldvalue, value):
@@ -156,6 +188,29 @@ class Schedule(ModelWithHistory):
                 if value[name] == code:
                     v = n
             return o, v
+
+        @staticmethod
+        def warning_type_change_message(instenct, name, oldvalue, value):
+            o = []
+            v = []
+            if oldvalue[name]:
+                for t in oldvalue[name].split(','):
+                    if t=='rtx':
+                        o.append(u'腾讯通')
+                    elif t=='email':
+                        o.append(u'电子邮件')
+                    elif t == 'sms':
+                        o.append(u'手机短信')
+
+            if value[name]:
+                for t in value[name].split(','):
+                    if t=='rtx':
+                        v.append(u'腾讯通')
+                    elif t=='email':
+                        v.append(u'电子邮件')
+                    elif t == 'sms':
+                        v.append(u'手机短信')
+            return u'、'.join(o),u'、'.join(v)
 
         @staticmethod
         def warning_time_change_message(instence, name, oldvalue, value):
@@ -302,8 +357,144 @@ class Task(ModelWithHistory):
     flag = models.CharField(max_length=10, verbose_name=u'禅道类型', null=True, blank=True, help_text=u'任务、需求、bug')
     flagid = models.IntegerField(verbose_name=u'禅道id', null=True, blank=True, help_text=u'主键')
 
+    def __unicode__(self):
+        return u'%s' % (self.title,)
+
+    class History:
+        model = True
+        fields = (
+            'title', 'desc', 'startdate', 'enddate', 'status',
+            'color', 'author', 'warning_type', 'warning_time')
+
+
+
+        @staticmethod
+        def startdate_change_message(instence, name, oldvalue, value):
+            o = u''
+            v = u''
+            if oldvalue[name]:
+                o = oldvalue[name][:-9]
+            if value[name]:
+                v = value[name][:-9]
+            return o,v
+
+        @staticmethod
+        def enddate_change_message(instence, name, oldvalue, value):
+            if instence._history_action == ADDITION:
+                o = u''
+            else:
+                o = u'永远'
+            v = u'永远'
+            if oldvalue[name]:
+                o = oldvalue[name][:-9]
+            if value[name]:
+                v = value[name][:-9]
+            return o,v
+
+        @staticmethod
+        def status_change_message(instence, name, oldvalue, value):
+
+            if oldvalue[name] == 'True':
+                o = u'完成'
+            else:
+                o = u'未完成'
+            if value[name] == 'True':
+                v = u'完成'
+            else:
+                v = u'未完成'
+            return o, v
+
+        @staticmethod
+        def color_change_message(instence, name, oldvalue, value):
+            o=''
+            v=''
+            if oldvalue[name]:
+                o = u'#06x'%int(oldvalue[name])
+            if value[name]:
+                v = u'#06x'%int(value[name])
+            return o,v
+
+
+
+        @staticmethod
+        def warning_type_change_message(instenct, name, oldvalue, value):
+            o = []
+            v = []
+            if oldvalue[name]:
+                for t in oldvalue[name].split(','):
+                    if t=='rtx':
+                        o.append(u'腾讯通')
+                    elif t=='email':
+                        o.append(u'电子邮件')
+                    elif t == 'sms':
+                        o.append(u'手机短信')
+
+            if value[name]:
+                for t in value[name].split(','):
+                    if t=='rtx':
+                        v.append(u'腾讯通')
+                    elif t=='email':
+                        v.append(u'电子邮件')
+                    elif t == 'sms':
+                        v.append(u'手机短信')
+            return u'、'.join(o),u'、'.join(v)
+
+        @staticmethod
+        def warning_time_change_message(instence, name, oldvalue, value):
+            ov = []
+            for mins in oldvalue[name].split(','):
+                if not mins:
+                    continue
+                mins = int(mins)
+                if oldvalue['is_all_day'] == 'True':
+
+                    d = 0 - divmod(mins, 24 * 60.0)[0]
+                    h, m = divmod(divmod(mins + d * 24 * 60, 24 * 60)[1], 60.0)
+                    # m = divmod(mins+d*24*60,60)[1]
+                    if d > 0:
+                        o = u'提前%d天,%02d:%02d' % (d, h, m)
+                    else:
+                        o = u'%02d:%02d' % (h, m)
+                else:
+                    if divmod(mins, 7 * 24 * 60)[1] == 0:
+                        o = u'提前%d周' % divmod(mins, 7 * 24 * 60)[0]
+                    elif divmod(mins, 24 * 60)[1] == 0:
+                        o = u'提前%d天' % divmod(mins, 24 * 60)[0]
+                    elif divmod(mins, 60)[1] == 0:
+                        o = u'提前%d小时' % divmod(mins, 60)[0]
+                    else:
+                        o = u'提前%d分钟' % divmod(mins, 60)[1]
+                ov.append(o)
+
+            vv = []
+            for mins in value[name].split(','):
+                if not mins:
+                    continue
+                mins = int(mins)
+                if instence.is_all_day:
+                    d = 0 - divmod(mins, 24 * 60.0)[0]
+                    h, m = divmod(divmod(mins + d * 24 * 60, 24 * 60)[1], 60.0)
+                    # m = divmod(mins+d*24*60,60)[1]
+                    if d > 0:
+                        v = u'提前%d天,%02d:%02d' % (d, h, m)
+                    else:
+                        v = u'%02d:%02d' % (h, m)
+                else:
+                    if divmod(mins, 7 * 24 * 60)[1] == 0:
+                        v = u'提前%d周' % divmod(mins, 7 * 24 * 60)[0]
+                    elif divmod(mins, 24 * 60)[1] == 0:
+                        v = u'提前%d天' % divmod(mins, 24 * 60)[0]
+                    elif divmod(mins, 60)[1] == 0:
+                        v = u'提前%d小时' % divmod(mins, 60)[0]
+                    else:
+                        v = u'提前%d分钟' % divmod(mins, 60)[1]
+                vv.append(v)
+            return u'、'.join(ov), u'、'.join(vv)
+
+
     class Meta():
         unique_together = [('flag', 'flagid')]
+        verbose_name = u'任务'
 
     def adjustWarning(self):
         from rili.warningtools import adjustRiLiWarning

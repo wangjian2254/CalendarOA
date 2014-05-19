@@ -12,9 +12,7 @@ urlpatterns = patterns('model_history',
 
 
 
-    url(r'^getMyHistory', 'view_history.getMyHistory'),
-    url(r'^getHistoryWithMe', 'view_history.getHistoryWithMe'),
-    url(r'^getHistoryByModel', 'view_history.getHistoryByModel'),
+    url(r'^getMyHistory', 'view_history.getHistory'),
 
 
 
