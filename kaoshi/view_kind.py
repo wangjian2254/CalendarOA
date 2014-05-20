@@ -2,17 +2,17 @@
 #author:u'王健'
 #Date: 14-5-15
 #Time: 下午8:43
-from kaoshi.models import  PaperKind
+from kaoshi.models import Kind
 from util.jsonresult import getResult
 
 __author__ = u'王健'
 
 
-def getAllPaperKind(request):
+def getAllKind(request):
     kindlist = []
     kindidlist = []
     kinddict = {}
-    for kind in PaperKind.objects.all().order_by('id'):
+    for kind in Kind.objects.all().order_by('id'):
         kinddict['%s' % kind.pk] = {'id': kind.pk,  'fatherid': kind.father_kind_id,
                                       'name': kind.name, 'children': []}
         kindidlist.append(kind.pk)
@@ -25,29 +25,29 @@ def getAllPaperKind(request):
     for kind in kinddict.values():
         if len(kind['children']) == 0:
             del kind['children']
-    return getResult(True, u'获取考卷分类成功', kindlist)
+    return getResult(True, u'获取试题分类成功', kindlist)
 
-def updatePaperKind(request):
+def updateKind(request):
     id = request.REQUEST.get('id', '')
     name = request.REQUEST.get('name', '')
     kindid = request.REQUEST.get('fatherid', '')
     if not name:
         return getResult(False,u'分类名称不能为空',None)
     if id:
-        kind = PaperKind.objects.get(pk=id)
+        kind = Kind.objects.get(pk=id)
     else:
-        kind = PaperKind()
+        kind = Kind()
     kind.name = name.strip()
     if kindid:
-        kind.father_kind = PaperKind.objects.get(pk=kindid)
+        kind.father_kind = Kind.objects.get(pk=kindid)
     kind.save()
     return getResult(True,u'保存分类信息成功', kind.pk)
 
 
-def delPaperKind(request):
+def delKind(request):
     id = request.REQUEST.get('id', '')
     if id:
-        kind = PaperKind.objects.get(pk=id)
+        kind = Kind.objects.get(pk=id)
         kind.delete()
     else:
         getResult(False, u'分类不存在', None)

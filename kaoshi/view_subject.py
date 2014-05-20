@@ -7,12 +7,16 @@ from util.jsonresult import getResult
 __author__ = u'王健'
 
 
-def getAllKind(request):
+def updateSubject(request):
     return getResult(True, '', None)
 
-def updateKind(request):
+def getSubjectByKind(request):
     return getResult(True,'', None)
 
 
-def delKind(request):
+def delSubject(request):
+    return getResult(True,'', None)
+
+
+def doSubjectOption(request):
     return getResult(True,'', None)
