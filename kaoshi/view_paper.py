@@ -67,6 +67,14 @@ def updatePaper(request):
     '''
     修改一个试卷
     '''
+
+    return getResult(True, '', None)
+
+
+def doPaperSubject(request):
+    '''
+    管理试卷的试题
+    '''
     return getResult(True, '', None)
 
 
@@ -100,12 +108,6 @@ def answerPaper(request):
     '''
     return getResult(True, '', None)
 
-
-def doPaperSubject(request):
-    '''
-    管理试卷的试题
-    '''
-    return getResult(True, '', None)
 
 
 def copyPaper(request):

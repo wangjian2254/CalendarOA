@@ -2,6 +2,8 @@
 #author:u'王健'
 #Date: 14-5-15
 #Time: 下午8:43
+from django.db import transaction
+from kaoshi.forms import KindForm
 from kaoshi.models import Kind
 from util.jsonresult import getResult
 
@@ -28,20 +30,17 @@ def getAllKind(request):
     return getResult(True, u'获取试题分类成功', kindlist)
 
 def updateKind(request):
-    id = request.REQUEST.get('id', '')
-    name = request.REQUEST.get('name', '')
-    kindid = request.REQUEST.get('fatherid', '')
-    if not name:
-        return getResult(False,u'分类名称不能为空',None)
-    if id:
-        kind = Kind.objects.get(pk=id)
-    else:
-        kind = Kind()
-    kind.name = name.strip()
-    if kindid:
-        kind.father_kind = Kind.objects.get(pk=kindid)
-    kind.save()
-    return getResult(True,u'保存分类信息成功', kind.pk)
+    try:
+        with transaction.commit_on_success():
+            pk = request.REQUEST.get('id', '')
+            if pk:
+                kindForm = KindForm(request.POST, Kind.objects.get(pk=pk))
+            else:
+                kindForm = KindForm(request.POST)
+            kind = kindForm.save()
+            return getResult(True,u'保存分类信息成功', kind.pk)
+    except Exception, e:
+        return getResult(False, u'发送信息失败', None)
 
 
 def delKind(request):
