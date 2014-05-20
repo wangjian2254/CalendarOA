@@ -43,8 +43,7 @@ def updateMessage(request):
                 messageForm = MessageForm(request.POST)
 
             message = messageForm.save(False)
-            if not message.f:
-                message.f = request.user
+            message.f = request.user
             message.save()
             messageForm.save_m2m()
             result, msg = message.send()
@@ -91,11 +90,13 @@ def getMessageByUser(request):
     totalnum = messagequery.count()
     resultlist = []
     messageids=[]
+    msgread={}
     for m in messagequery[start:limit]:
         messageids.append(m.message_id)
+        msgread[str(m.pk)]=m.is_read
     for m in OAMessage.objects.filter(pk__in=messageids) :
-        s = {'id': m.pk, 'mid': m.message_id, 'title': m.message.title, 'mfid': m.message.fatherMessage_id, 'authorname':m.message.f.first_name, 'author':m.message.f.username,
-             'is_read': m.is_read, 'datetime': m.message.createtime.strftime("%Y/%m/%d %H:%M")}
+        s = {'id': m.pk, 'title': m.title, 'mfid': m.fatherMessage_id, 'authorname':m.f.first_name, 'author':m.f.username,
+             'is_read': msgread.get(str(m.pk)), 'datetime': m.createtime.strftime("%Y/%m/%d %H:%M")}
         resultlist.append(s)
     return getResult(True, u'获取信息成功', {'limit': limit, 'start': start, 'total': totalnum, 'list': resultlist})
 

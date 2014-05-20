@@ -1,12 +1,14 @@
 #coding=utf-8
 #Date: 11-12-8
 #Time: 下午10:28
+import threading
 import uuid
 import datetime
 from django.contrib.auth.models import User
 from CalendarOA.settings import APP_HOST
 from rili.models import Group, Schedule
 
+c = threading.RLock()
 __author__ = u'王健'
 
 def regAMB(person):
@@ -34,8 +36,10 @@ def regAMB(person):
         schedule.repeat_date =','.join(['0','1','2','3','4'])
         schedule.startdate = datetime.datetime.now()
         schedule.enddate = None
-        schedule.time_start = datetime.datetime.strptime('1700','%H%M')
-        schedule.time_end = datetime.datetime.strptime('1730','%H%M')
+
+        with c:
+            schedule.time_start = datetime.datetime.strptime('1700','%H%M')
+            schedule.time_end = datetime.datetime.strptime('1730','%H%M')
         schedule.warning_type =','.join(['rtx'])
         schedule.warning_time =','.join(['0','-480'])
         schedule.save()
@@ -49,8 +53,9 @@ def regAMB(person):
         schedule.repeat_date =','.join(['1','2','3'])
         schedule.startdate = datetime.datetime.now()
         schedule.enddate = None
-        schedule.time_start = datetime.datetime.strptime('0900','%H%M')
-        schedule.time_end = datetime.datetime.strptime('0930','%H%M')
+        with c:
+            schedule.time_start = datetime.datetime.strptime('0900','%H%M')
+            schedule.time_end = datetime.datetime.strptime('0930','%H%M')
         schedule.warning_type =','.join(['rtx','email'])
         schedule.warning_time =','.join(['0','-10'])
         schedule.save()

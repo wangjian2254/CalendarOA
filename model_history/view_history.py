@@ -2,12 +2,13 @@
 #Date: 11-12-8
 #Time: 下午10:28
 import datetime
+import threading
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 
 __author__ = u'王健'
-
+c = threading.RLock()
 
 def showActionFlag(flag):
     if flag == ADDITION:
@@ -37,8 +38,9 @@ def getHistory(request):
     start = request.REQUEST.get('start', None)
     end = request.REQUEST.get('end', None)
     if start and end:
-        startdate = datetime.datetime.strptime(start, "%Y/%m/%d")
-        enddate = datetime.datetime.strptime(end, "%Y/%m/%d") + datetime.timedelta(days=1)
+        with c:
+            startdate = datetime.datetime.strptime(start, "%Y/%m/%d")
+            enddate = datetime.datetime.strptime(end, "%Y/%m/%d") + datetime.timedelta(days=1)
         logquery = logquery.filter(action_time__lt=enddate, action_time__gte=startdate)
     elif content_type_id and object_id:
         logquery = logquery.filter(object_id=object_id)

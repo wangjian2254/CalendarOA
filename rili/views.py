@@ -1,6 +1,7 @@
 #coding=utf-8
 # Create your views here.
 import datetime
+import threading
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse, Http404
@@ -14,7 +15,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import transaction
 
-
+c = threading.RLock()
 
 def index(request):
     url = 'http://' + request.META['HTTP_HOST'] + '/static/swf/'
@@ -254,8 +255,9 @@ def getScheduleByDate(request):
     if startdatestr and enddatestr:
         user = request.user
         groupquery = Group.objects.filter(Q(author=user) | Q(users=user) | Q(observers=user))
-        startdate = datetime.datetime.strptime(startdatestr, "%Y%m%d")
-        enddate = datetime.datetime.strptime(enddatestr, "%Y%m%d")
+        with c:
+            startdate = datetime.datetime.strptime(startdatestr, "%Y%m%d")
+            enddate = datetime.datetime.strptime(enddatestr, "%Y%m%d")
 
         result = {}
         scheduledict = {}
@@ -269,7 +271,8 @@ def getScheduleByDate(request):
             if schedule.pk in schedulepkset:
                 continue
             schedulepkset.add(schedule.pk)
-            date = datetime.datetime.strptime(startdatestr, "%Y%m%d")
+            with c:
+                date = datetime.datetime.strptime(startdatestr, "%Y%m%d")
             while date <= enddate:
                 if not result.has_key(date.strftime("%Y%m%d")):
                     result[date.strftime("%Y%m%d")] = []
@@ -325,22 +328,25 @@ def updateSchedule(request):
         schedule = Schedule()
     schedule.title = title
     schedule.desc = desc
-    schedule.startdate = datetime.datetime.strptime(startdate, "%Y%m%d")
-    if enddate:
-        schedule.enddate = datetime.datetime.strptime(enddate, "%Y%m%d")
-    else:
-        schedule.enddate = None
+    with c:
+        schedule.startdate = datetime.datetime.strptime(startdate, "%Y%m%d")
+        if enddate:
+            schedule.enddate = datetime.datetime.strptime(enddate, "%Y%m%d")
+        else:
+            schedule.enddate = None
     if is_all_day.lower() == 'true':
         schedule.is_all_day = True
     else:
         schedule.is_all_day = False
     if time_start:
-        schedule.time_start = datetime.datetime.strptime(time_start, '%H%M')
+        with c:
+            schedule.time_start = datetime.datetime.strptime(time_start, '%H%M')
     else:
         schedule.time_start = None
 
     if time_end:
-        schedule.time_end = datetime.datetime.strptime(time_end, '%H%M')
+        with c:
+            schedule.time_end = datetime.datetime.strptime(time_end, '%H%M')
     else:
         schedule.time_end = None
     schedule.warning_time=''

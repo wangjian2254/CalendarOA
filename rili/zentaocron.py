@@ -14,7 +14,7 @@ from rili.warningtools import adjustRiLiWarning
 from django.core.cache import cache
 import json
 from util.rtxtools import send_rtxmsg
-
+c = threading.RLock()
 dateformat='%Y-%m-%d'
 timeformat='%Y-%m-%d %H:%M:%S'
 reobj = re.compile('(?i)<[/]{0,1}[\w]{1,5}[^>]*>')
@@ -89,18 +89,19 @@ def zentaoTaskFun(sessiondata,person):
             group=group[0]
 
         for task in result:
-            if not task.get('lastEditedBy'):
-                lastEditDate = datetime.strptime(str(task.get('assignedDate')),timeformat)
-            else:
-                lastEditDate = datetime.strptime(str(task.get('lastEditedDate')),timeformat)
-            try:
-                startTime = datetime.strptime(str(task.get('estStarted')),dateformat)
-            except:
-                startTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
-            try:
-                endTime = datetime.strptime(str(task.get('deadline')),dateformat)
-            except:
-                endTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
+            with c:
+                if not task.get('lastEditedBy'):
+                    lastEditDate = datetime.strptime(str(task.get('assignedDate')),timeformat)
+                else:
+                    lastEditDate = datetime.strptime(str(task.get('lastEditedDate')),timeformat)
+                try:
+                    startTime = datetime.strptime(str(task.get('estStarted')),dateformat)
+                except:
+                    startTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
+                try:
+                    endTime = datetime.strptime(str(task.get('deadline')),dateformat)
+                except:
+                    endTime = datetime.strptime(str(task.get('assignedDate')).split(' ')[0],dateformat)
             # endTime = datetime.strptime(str(task.get('deadline')),dateformat)
             schedultTitle = task.get('name')
             schedultDesc = u'项目：%s\n需求：%s\n%s'%(task.get('projectName',u'无'),task.get('storyTitle') if task.get('storyTitle') else u'无',task.get('desc',u'无'))
@@ -197,11 +198,12 @@ def zentaoBugFun(sessiondata,person):
         return
     with transaction.commit_on_success():
         for task in result:
-            if not task.get('lastEditedBy'):
-                lastEditDate = datetime.strptime(str(task.get('assignedDate')),timeformat)
-            else:
-                lastEditDate = datetime.strptime(str(task.get('lastEditedDate')),timeformat)
-            startTime = datetime.strptime(str(task.get('assignedDate').split(' ')[0]),dateformat)
+            with c:
+                if not task.get('lastEditedBy'):
+                    lastEditDate = datetime.strptime(str(task.get('assignedDate')),timeformat)
+                else:
+                    lastEditDate = datetime.strptime(str(task.get('lastEditedDate')),timeformat)
+                startTime = datetime.strptime(str(task.get('assignedDate').split(' ')[0]),dateformat)
             endTime = None
             if task.get('status')=='resolved':
                 schedultTitle = u'待确认 Bug_%s'%task.get('title')

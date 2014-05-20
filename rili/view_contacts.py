@@ -17,7 +17,7 @@ def getContacts(request):
         return getResult(True,'',[])
     l = []
     for u in request.user.contacts.users.all():
-        l.append({'username': u.username, 'nickname': u.first_name, 'email':u.email, 'rtx':u.person.rtxnum, 'sms': u.person.telphone})
+        l.append({'id':u.pk, 'username': u.username, 'nickname': u.first_name, 'email':u.email, 'rtx':u.person.rtxnum, 'sms': u.person.telphone})
     return getResult(True, '',l)
 
 @client_login_required

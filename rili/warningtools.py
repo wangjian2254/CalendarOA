@@ -2,8 +2,9 @@
 #Date: 11-12-8
 #Time: 下午10:28
 import datetime
+import threading
 from rili.models import  Schedule, REPEAT_TYPE, Task, RiLiWarning
-
+c = threading.RLock()
 __author__ = u'王健'
 
 def dateisright(date,schedule):
@@ -34,14 +35,16 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
     elif type == 'Task':
         obj = Task.objects.get(pk=id)
     if hasattr(obj,'is_all_day') and  not obj.is_all_day:
-        currentdate = datetime.datetime.strptime('%s %s'%(obj.startdate.strftime('%Y%m%d'),obj.time_start.strftime('%H%M')),'%Y%m%d %H%M')
+        with c:
+            currentdate = datetime.datetime.strptime('%s %s'%(obj.startdate.strftime('%Y%m%d'),obj.time_start.strftime('%H%M')),'%Y%m%d %H%M')
 
     else:
         currentdate = obj.startdate
 
     ds = currentdate.strftime('%Y%m%d%H%M')
     nowdate = datetime.datetime.now()
-    nowday = datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'),'%Y%m%d')
+    with c:
+        nowday = datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'),'%Y%m%d')
 
     for warning in wquery:
         if type == 'Task' and obj.status:
@@ -51,7 +54,8 @@ def adjustRiLiWarning(id,type='Schedule',wid=0):
         if warning.time:
             tempdate = warning.time + datetime.timedelta(minutes=0-warning.timenum)
         else:
-            tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
+            with c:
+                tempdate = datetime.datetime.strptime(ds,'%Y%m%d%H%M')
         if not obj.enddate or obj.enddate >= nowday:
             while time+tempdate < nowdate or ((time + tempdate > nowdate and  dateinrange(tempdate,obj)) and not dateisright(tempdate,obj)):
                 if hasattr(obj,'repeat_type') and obj.repeat_type == 'yearly':

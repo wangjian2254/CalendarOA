@@ -12,6 +12,7 @@ urlpatterns = patterns('oamessage',
 
 
 
+    url(r'^updateMessage', 'view_message.updateMessage'),
     url(r'^getUnReadCount', 'view_message.getUnReadCount'),
     url(r'^flagMessage', 'view_message.flagMessage'),
     url(r'^getMessageByUser', 'view_message.getMessageByUser'),

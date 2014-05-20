@@ -21,20 +21,44 @@ def getAllPaper(request):
 
     title = request.REQUEST.get('title', '')
     kinds = request.REQUEST.getlist('kinds', [])
-    start = request.REQUEST.get('startdate', None)
-    end = request.REQUEST.get('enddate', None)
-    if start and end:
-        start = datetime.datetime.strptime(start, "%Y/%m/%d")
-        end = datetime.datetime.strptime(end, "%Y/%m/%d") + datetime.timedelta(days=1)
+    # start = request.REQUEST.get('startdate', None)
+    # end = request.REQUEST.get('enddate', None)
+    # if start and end:
+    #     start = datetime.datetime.strptime(start, "%Y/%m/%d")
+    #     end = datetime.datetime.strptime(end, "%Y/%m/%d") + datetime.timedelta(days=1)
 
 
     limit = int(request.REQUEST.get('limit', '40'))
     start = int(request.REQUEST.get('start', '0'))
     paperquery = Paper.objects.all().order_by('-id')
 
+    if is_pub:
+        if is_pub=='true':
+            paperquery = paperquery.filter(is_pub=True)
+        else:
+            paperquery = paperquery.filter(is_pub=False)
+    if is_user:
+        if is_user == 'true':
+            paperquery = paperquery.filter(is_user=True)
+        else:
+            paperquery = paperquery.filter(is_user=True)
+    if is_replay:
+        if is_replay == 'true':
+            paperquery = paperquery.filter(is_replay=True)
+        else:
+            paperquery = paperquery.filter(is_replay=True)
+    if title:
+        paperquery = paperquery.filter(title__icontains = title)
+
+    if kinds:
+        paperquery = paperquery.filter(kinds__in=kinds)
+
+
+
     totalnum = paperquery.count()
-    for paper in paperquery[start:start+limit]:
-        pass
+    for p in paperquery[start:start+limit]:
+        paperlist.append({"id":p.pk, 'title':p.title, 'startDate':unicode(p.startDate),'endDate':unicode(p.endDate),
+                          'is_user':p.is_user,'is_pub':p.is_pub,'is_replay':p.is_replay})
     return getResult(True, '', {'result':paperlist, 'limit': limit, 'start': start,
                                 'total': totalnum})
 

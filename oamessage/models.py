@@ -2,6 +2,8 @@
 #author:u'王健'
 #Date: 14-5-14
 #Time: 下午9:10
+import datetime
+
 __author__ = u'王健'
 
 from django.contrib.auth.models import User
@@ -16,7 +18,7 @@ class OAMessage(models.Model):
     t = models.ManyToManyField(User, related_name='to_user', verbose_name=u'接收人', null=True, blank=True)
     title = models.CharField(max_length=200, verbose_name=u'标题', null=True, blank=True)
     desc = models.TextField(verbose_name=u'内容', null=True, blank=True)
-    createtime = models.DateTimeField(auto_created=True, verbose_name=u'创建日期')
+    createtime = models.DateTimeField(default=datetime.datetime.now, auto_created=True, verbose_name=u'创建日期')
     flag = models.BooleanField(default=True, verbose_name=u'是否草稿')
     fatherMessage = models.ForeignKey('OAMessage', verbose_name=u'父级信息', null=True, blank=True)
 

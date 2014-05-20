@@ -3,6 +3,7 @@
 #Date: 14-4-1
 #Time: 上午7:04
 import datetime
+import threading
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
@@ -13,7 +14,7 @@ from util.loginrequired import client_login_required
 
 __author__ = u'王健'
 
-
+c = threading.RLock()
 
 @client_login_required
 def getTaskByStatus(request):
@@ -42,7 +43,8 @@ def getTaskByStatus(request):
         if today:
             tquery = tquery.filter(status=status)
         else:
-            n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
+            with c:
+                n=datetime.datetime.strptime(datetime.datetime.now().strftime('%Y%m%d'), "%Y%m%d")
             tquery = tquery.filter(Q(status=status)|Q(startdate__gte=n))
         for task in tquery.order_by('startdate'):
             if task.pk in taskpkset:
@@ -103,8 +105,9 @@ def updateTask(request):
         task = Task()
     task.title = title
     task.desc = desc
-    task.startdate = datetime.datetime.strptime(startdate, "%Y%m%d")
-    task.enddate = datetime.datetime.strptime(enddate, "%Y%m%d")
+    with c:
+        task.startdate = datetime.datetime.strptime(startdate, "%Y%m%d")
+        task.enddate = datetime.datetime.strptime(enddate, "%Y%m%d")
 
 
     task.color = int(color)
