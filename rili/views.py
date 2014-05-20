@@ -39,13 +39,20 @@ def menu(request):
                         <menuitem label='常用联系人' mod='contact'></menuitem>
                         <menuitem label='分组管理' mod='group'></menuitem>
                     </menu>
-                    <menu mod='myMenu1' label='日程管理'>
+                    <menu mod='myMenu1' label='考试'>
+                        <menuitem label='试题分类管理' mod='subjectkind'></menuitem>
+                        <menuitem label='试卷分类管理' mod='paperkind'></menuitem>
+                        <menuitem label='试卷管理' mod='paper'></menuitem>
+                        <menuitem label='题库管理' mod='subject'></menuitem>
+                        <menuitem label='我的考试' mod='mypaper'></menuitem>
+                    </menu>
+                    <menu mod='myMenu1' label='日程'>
                         <menuitem label='日程管理' mod='calendar'></menuitem>
                     </menu>
-                    <menu mod='myMenu1' label='消息管理'>
+                    <menu mod='myMenu1' label='消息'>
                         <menuitem label='站内消息' mod='message'></menuitem>
                     </menu>
-                    <menu mod='myMenu1' label='系统管理'>
+                    <menu mod='myMenu1' label='系统'>
                         <menuitem label='日志' mod='log'></menuitem>
                     </menu>
                 </root>
