@@ -24,9 +24,9 @@ class OAMessage(models.Model):
 
     def send(self):
         if self.flag:
-            return (False, u'草稿不可以发送')
+            return (False, u'保存成草稿成功')
         elif self.t.count() == 0:
-            return (False, u'没有指定接收人')
+            return (False, u'没有指定接收人，保存成草稿')
         else:
             for user in self.t.all():
                 receiveMessage = ReceiveMessage()
