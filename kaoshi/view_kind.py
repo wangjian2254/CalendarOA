@@ -6,10 +6,12 @@ from django.db import transaction
 from kaoshi.forms import KindForm
 from kaoshi.models import Kind
 from util.jsonresult import getResult
+from util.loginrequired import client_login_required
 
 __author__ = u'王健'
 
 
+@client_login_required
 def getAllKind(request):
     kindlist = []
     kindidlist = []
@@ -29,20 +31,22 @@ def getAllKind(request):
             del kind['children']
     return getResult(True, u'获取试题分类成功', kindlist)
 
+@client_login_required
+@transaction.commit_on_success
 def updateKind(request):
-    try:
-        with transaction.commit_on_success():
-            pk = request.REQUEST.get('id', '')
-            if pk:
-                kindForm = KindForm(request.POST, Kind.objects.get(pk=pk))
-            else:
-                kindForm = KindForm(request.POST)
-            kind = kindForm.save()
-            return getResult(True,u'保存分类信息成功', kind.pk)
-    except Exception, e:
-        return getResult(False, u'发送信息失败', None)
+    pk = request.REQUEST.get('id', '')
+    if pk:
+        kindForm = KindForm(request.POST, Kind.objects.get(pk=pk))
+    else:
+        kindForm = KindForm(request.POST)
+    if not kindForm.is_valid():
+        msg = kindForm.json_error()
+        return getResult(False,msg,None)
+    kind = kindForm.save()
+    return getResult(True,u'保存分类信息成功', kind.pk)
 
 
+@client_login_required
 def delKind(request):
     id = request.REQUEST.get('id', '')
     if id:

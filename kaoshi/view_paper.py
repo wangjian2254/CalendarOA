@@ -5,10 +5,12 @@
 import datetime
 from kaoshi.models import Paper
 from util.jsonresult import getResult
+from util.loginrequired import client_login_required
 
 __author__ = u'王健'
 
 
+@client_login_required
 def getAllPaper(request):
     '''
     获取所有试卷
@@ -63,6 +65,7 @@ def getAllPaper(request):
                                 'total': totalnum})
 
 
+@client_login_required
 def updatePaper(request):
     '''
     修改一个试卷
@@ -71,6 +74,7 @@ def updatePaper(request):
     return getResult(True, '', None)
 
 
+@client_login_required
 def doPaperSubject(request):
     '''
     管理试卷的试题
@@ -78,6 +82,7 @@ def doPaperSubject(request):
     return getResult(True, '', None)
 
 
+@client_login_required
 def delPaper(request):
     '''
     删除一个试卷，设置为不公开
@@ -85,6 +90,7 @@ def delPaper(request):
     return getResult(True, '', None)
 
 
+@client_login_required
 def getPaper(request):
     '''
     根据 id 获取一张试卷的完整信息，包括题目
@@ -93,6 +99,7 @@ def getPaper(request):
 
 
 
+@client_login_required
 def getMyPaper(request):
     '''
     type ：need、do 两个值
@@ -102,6 +109,7 @@ def getMyPaper(request):
     return getResult(True, '', None)
 
 
+@client_login_required
 def answerPaper(request):
     '''
     提交某个试卷的答案，计算结果并返回
@@ -110,6 +118,7 @@ def answerPaper(request):
 
 
 
+@client_login_required
 def copyPaper(request):
     '''
     根据指定试卷，复制一份试卷包括 考题

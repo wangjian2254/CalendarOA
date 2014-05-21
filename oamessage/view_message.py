@@ -30,27 +30,27 @@ def getUnReadCount(request):
 
 
 @client_login_required
+@transaction.commit_on_success
 def updateMessage(request):
     '''
     修改、新建 信息，是保存为草稿，还是直接发送
     '''
-    try:
-        with transaction.commit_on_success():
-            pk = request.REQUEST.get('id', '')
-            if pk:
-                messageForm = MessageForm(request.POST, OAMessage.objects.get(pk=pk))
-            else:
-                messageForm = MessageForm(request.POST)
+    pk = request.REQUEST.get('id', '')
+    if pk:
+        messageForm = MessageForm(request.POST, OAMessage.objects.get(pk=pk))
+    else:
+        messageForm = MessageForm(request.POST)
+    if not messageForm.is_valid():
+        msg = messageForm.json_error()
+        return getResult(False,msg,None)
 
-            message = messageForm.save(False)
-            message.f = request.user
-            message.save()
-            messageForm.save_m2m()
-            result, msg = message.send()
-            return getResult(True, msg, {'result': result, 'messageid': message.pk})
+    message = messageForm.save(False)
+    message.f = request.user
+    message.save()
+    messageForm.save_m2m()
+    result, msg = message.send()
+    return getResult(True, msg, {'result': result, 'messageid': message.pk})
 
-    except Exception, e:
-        return getResult(False, u'发送信息失败', None)
 
 
 @client_login_required

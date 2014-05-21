@@ -4,10 +4,12 @@
 #Time: 下午8:43
 from kaoshi.models import  PaperKind
 from util.jsonresult import getResult
+from util.loginrequired import client_login_required
 
 __author__ = u'王健'
 
 
+@client_login_required
 def getAllPaperKind(request):
     kindlist = []
     kindidlist = []
@@ -27,6 +29,7 @@ def getAllPaperKind(request):
             del kind['children']
     return getResult(True, u'获取考卷分类成功', kindlist)
 
+@client_login_required
 def updatePaperKind(request):
     id = request.REQUEST.get('id', '')
     name = request.REQUEST.get('name', '')
@@ -44,6 +47,7 @@ def updatePaperKind(request):
     return getResult(True,u'保存分类信息成功', kind.pk)
 
 
+@client_login_required
 def delPaperKind(request):
     id = request.REQUEST.get('id', '')
     if id:
