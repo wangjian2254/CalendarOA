@@ -108,7 +108,6 @@ class Subject(models.Model):
     试题信息，有记录正确次数和错误次数，方便计算试题的正确率，未来可以衡量难度
     '''
     title = models.CharField(max_length=500, verbose_name=u'题目', help_text=u'选择题题目')
-    num = models.IntegerField(default=1, verbose_name=u'可选数量', help_text=u'规定投票时选择选项的数量，多选有效')
     kinds = models.ManyToManyField(Kind,null=True,blank=True,verbose_name=u'分类',help_text=u'题目的分类,多个隶属分类')
     bz = models.CharField(max_length=500,verbose_name=u'备注',help_text=u'正确答案的解释')
     rightnum = models.IntegerField(default=0,verbose_name=u'正确次数')

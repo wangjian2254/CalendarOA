@@ -231,9 +231,9 @@ def scheduleToDict(schedule):
                                        schedule.users.all()]}
     if schedule.enddate:
         s['enddate'] = schedule.enddate.strftime('%Y%m%d')
-    if schedule.time_start:
+    if schedule.time_start != None:
         s['time_start'] = schedule.time_start.strftime('%H%M')
-    if schedule.time_end:
+    if schedule.time_end != None:
         s['time_end'] = schedule.time_end.strftime('%H%M')
 
     s['warningkind']=schedule.warning_type.split(',')

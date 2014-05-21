@@ -8,12 +8,11 @@ __author__ = u'王健'
 
 
 class CustomModelForm(ModelForm):
-
     def json_error(self,s='\n'):
         msg = []
         for k in self.errors.keys():
             label = self.fields.get(k).label
-            error = u"、".join([u'%s正确的%s'%(e,label) for e in self.errors.get(k)])
+            error = u"、".join(self.errors.get(k))
             msg.append(u'%s : %s'%(label,error))
         return s.join(msg)
   
