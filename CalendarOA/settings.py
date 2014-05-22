@@ -143,6 +143,7 @@ INSTALLED_APPS = (
     'rili',
     'oamessage',
     'model_history',
+    'kaoshi',
 )
 
 # A sample logging configuration. The only tangible logging
