@@ -3,6 +3,7 @@
 #Date: 14-5-15
 #Time: 下午8:43
 import datetime
+from kaoshi.forms import PaperForm
 from kaoshi.models import Paper
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
@@ -71,7 +72,16 @@ def updatePaper(request):
     修改一个试卷
     '''
 
-    return getResult(True, '', None)
+    pk = request.REQUEST.get('id', '')
+    if pk:
+        paperform = PaperForm(request.POST, Paper.objects.get(pk=pk))
+    else:
+        paperform = PaperForm(request.POST)
+    if not paperform.is_valid():
+        msg = paperform.json_error()
+        return getResult(False,msg,None)
+    paper = paperform.save()
+    return getResult(True,u'保存分类信息成功', paper.pk)
 
 
 @client_login_required

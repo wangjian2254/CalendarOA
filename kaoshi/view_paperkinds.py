@@ -2,6 +2,7 @@
 #author:u'王健'
 #Date: 14-5-15
 #Time: 下午8:43
+from kaoshi.forms import PaperKindForm
 from kaoshi.models import  PaperKind
 from util.jsonresult import getResult
 from util.loginrequired import client_login_required
@@ -31,19 +32,15 @@ def getAllPaperKind(request):
 
 @client_login_required
 def updatePaperKind(request):
-    id = request.REQUEST.get('id', '')
-    name = request.REQUEST.get('name', '')
-    kindid = request.REQUEST.get('fatherid', '')
-    if not name:
-        return getResult(False,u'分类名称不能为空',None)
-    if id:
-        kind = PaperKind.objects.get(pk=id)
+    pk = request.REQUEST.get('id', '')
+    if pk:
+        kindForm = PaperKindForm(request.POST, PaperKind.objects.get(pk=pk))
     else:
-        kind = PaperKind()
-    kind.name = name.strip()
-    if kindid:
-        kind.father_kind = PaperKind.objects.get(pk=kindid)
-    kind.save()
+        kindForm = PaperKindForm(request.POST)
+    if not kindForm.is_valid():
+        msg = kindForm.json_error()
+        return getResult(False,msg,None)
+    kind = kindForm.save()
     return getResult(True,u'保存分类信息成功', kind.pk)
 
 
