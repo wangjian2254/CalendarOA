@@ -4,8 +4,8 @@
 #Time: 下午8:43
 import datetime
 from kaoshi.forms import PaperForm
-from kaoshi.models import Paper
-from util.jsonresult import getResult
+from kaoshi.models import Paper, Subject
+from util.jsonresult import getResult, MyEncoder
 from util.loginrequired import client_login_required
 
 __author__ = u'王健'
@@ -89,15 +89,30 @@ def doPaperSubject(request):
     '''
     管理试卷的试题
     '''
-    return getResult(True, '', None)
-
+    subjectids = request.REQUEST.getlist('sid')
+    paperid = request.REQUEST.get('pid')
+    do = request.REQUEST.get('do')
+    paper = Paper.objects.get(pk=paperid)
+    if do == 'add':
+        paper.subjects.add(*Subject.objects.filter(pk__in=subjectids))
+        return getResult(True,u'添加试题成功',None)
+    else:
+        paper.subjects.remove(*Subject.objects.filter(pk__in=subjectids))
+        return getResult(True,u'移除试题成功',None)
 
 @client_login_required
 def delPaper(request):
     '''
     删除一个试卷，设置为不公开
     '''
-    return getResult(True, '', None)
+    id = request.REQUEST.get('id', '')
+    if id:
+        paper = Paper.objects.get(pk=id)
+        paper.delete()
+    else:
+        return getResult(False, u'分类不存在', id)
+
+    return getResult(True,'', id)
 
 
 @client_login_required
@@ -105,7 +120,15 @@ def getPaper(request):
     '''
     根据 id 获取一张试卷的完整信息，包括题目
     '''
-    return getResult(True, '', None)
+    id = request.REQUEST.get('id', '')
+    if id:
+        paper = Paper.objects.get(pk=id)
+        pdict = MyEncoder.default(paper)
+        return getResult(True, u'获取试卷成功', pdict)
+    else:
+        return getResult(False, u'试卷不存在', id)
+
+
 
 
 
