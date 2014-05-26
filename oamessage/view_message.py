@@ -37,7 +37,7 @@ def updateMessage(request):
     '''
     pk = request.REQUEST.get('id', '')
     if pk:
-        messageForm = MessageForm(request.POST, OAMessage.objects.get(pk=pk))
+        messageForm = MessageForm(request.POST, instance = OAMessage.objects.get(pk=pk))
     else:
         messageForm = MessageForm(request.POST)
     if not messageForm.is_valid():
@@ -60,13 +60,12 @@ def flagMessage(request):
         with transaction.commit_on_success():
             pk = request.REQUEST.get('id', '')
             read = request.REQUEST.get('do', 'false')
-            receivemessage = ReceiveMessage.objects.get(pk=pk)
             if read == 'false':
-                receivemessage.is_read = False
+                read = False
             else:
-                receivemessage.is_read = True
-            receivemessage.save()
-            return getResult(True, u'操作成功', receivemessage.pk)
+                read = True
+            ReceiveMessage.objects.filter(pk=pk).update(is_read=read)
+            return getResult(True, u'操作成功', pk)
     except Exception, e:
         return getResult(False, u'操作失败', None)
 
@@ -86,17 +85,25 @@ def getMessageByUser(request):
         messagequery = messagequery.filter(is_read=False)
     elif type == 'read':
         messagequery = messagequery.filter(is_read=True)
+    elif type == 'saved':
+        messagequery = OAMessage.objects.filter(flag=True,f=request.user).order_by('-id')
+        resultlist = []
+        for m in messagequery:
+
+            s = {'id': m.pk,'rid':m.pk, 'title': m.title, 'mfid': m.fatherMessage_id, 'authorname':m.f.first_name, 'author':m.f.username,
+                  'datetime': m.createtime.strftime("%Y/%m/%d %H:%M"),'flag':m.flag,'desc':m.desc}
+            s['to'] = [{'username': u.username, 'nickname': u.first_name} for u in m.t.all()]
+            resultlist.append(s)
+        return getResult(True, u'获取信息成功', {'limit': limit, 'start': start, 'total': 0, 'list': resultlist})
 
     totalnum = messagequery.count()
     resultlist = []
     messageids=[]
     msgread={}
     for m in messagequery[start:limit]:
-        messageids.append(m.message_id)
-        msgread[str(m.pk)]=m.is_read
-    for m in OAMessage.objects.filter(pk__in=messageids).order_by('-id') :
-        s = {'id': m.pk, 'title': m.title, 'mfid': m.fatherMessage_id, 'authorname':m.f.first_name, 'author':m.f.username,
-             'is_read': msgread.get(str(m.pk)), 'datetime': m.createtime.strftime("%Y/%m/%d %H:%M")}
+
+        s = {'id': m.message_id,'rid':m.pk, 'title': m.message.title, 'mfid': m.message.fatherMessage_id, 'authorname':m.message.f.first_name, 'author':m.message.f.username,
+             'is_read': m.is_read, 'datetime': m.message.createtime.strftime("%Y/%m/%d %H:%M")}
         resultlist.append(s)
     return getResult(True, u'获取信息成功', {'limit': limit, 'start': start, 'total': totalnum, 'list': resultlist})
 

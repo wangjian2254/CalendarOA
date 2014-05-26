@@ -36,7 +36,7 @@ def getAllKind(request):
 def updateKind(request):
     pk = request.REQUEST.get('id', '')
     if pk:
-        kindForm = KindForm(request.POST, Kind.objects.get(pk=pk))
+        kindForm = KindForm(request.POST, instance = Kind.objects.get(pk=pk))
     else:
         kindForm = KindForm(request.POST)
     if not kindForm.is_valid():

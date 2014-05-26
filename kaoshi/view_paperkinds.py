@@ -34,7 +34,7 @@ def getAllPaperKind(request):
 def updatePaperKind(request):
     pk = request.REQUEST.get('id', '')
     if pk:
-        kindForm = PaperKindForm(request.POST, PaperKind.objects.get(pk=pk))
+        kindForm = PaperKindForm(request.POST, instance = PaperKind.objects.get(pk=pk))
     else:
         kindForm = PaperKindForm(request.POST)
     if not kindForm.is_valid():

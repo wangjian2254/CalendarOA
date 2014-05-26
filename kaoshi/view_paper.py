@@ -74,7 +74,7 @@ def updatePaper(request):
 
     pk = request.REQUEST.get('id', '')
     if pk:
-        paperform = PaperForm(request.POST, Paper.objects.get(pk=pk))
+        paperform = PaperForm(request.POST, instance = Paper.objects.get(pk=pk))
     else:
         paperform = PaperForm(request.POST)
     if not paperform.is_valid():
