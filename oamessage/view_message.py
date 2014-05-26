@@ -94,7 +94,7 @@ def getMessageByUser(request):
     for m in messagequery[start:limit]:
         messageids.append(m.message_id)
         msgread[str(m.pk)]=m.is_read
-    for m in OAMessage.objects.filter(pk__in=messageids) :
+    for m in OAMessage.objects.filter(pk__in=messageids).order_by('-id') :
         s = {'id': m.pk, 'title': m.title, 'mfid': m.fatherMessage_id, 'authorname':m.f.first_name, 'author':m.f.username,
              'is_read': msgread.get(str(m.pk)), 'datetime': m.createtime.strftime("%Y/%m/%d %H:%M")}
         resultlist.append(s)
@@ -102,7 +102,7 @@ def getMessageByUser(request):
 
 
 def messageToDict(fm):
-    result = {'mid': fm.pk, 'flag': fm.flag, 'title': fm.title, 'desc': fm.desc,
+    result = {'id': fm.pk, 'flag': fm.flag, 'title': fm.title, 'desc': fm.desc, 'fatherMessage_id':fm.fatherMessage_id,
               'datetime': fm.createtime.strftime("%Y/%m/%d %H:%M"), 'author': fm.f.username,
               'authorname': fm.f.first_name}
     result['to'] = [{'username': u.username, 'nickname': u.first_name} for u in fm.t.all()]
@@ -116,15 +116,13 @@ def getMessageById(request):
     if 0 < ReceiveMessage.objects.filter(user=request.user, message=pk).count():
         m = OAMessage.objects.get(pk=pk)
         if m.fatherMessage_id:
-            fm = m.fatherMessage
-            l = []
-            for message in OAMessage.objects.filter(fatherMessage=fm).order_by('-id'):
-                l.append(messageToDict(message))
-            l.append(messageToDict(fm))
-            return getResult(True, u'获取信息成功', l)
-        else:
-            result = messageToDict(m)
-            return getResult(True, u'获取信息成功', [result])
+            m = m.fatherMessage
+
+        l = []
+        l.append(messageToDict(m))
+        for message in OAMessage.objects.filter(fatherMessage=m).order_by('id'):
+            l.append(messageToDict(message))
+        return getResult(True, u'获取信息成功', l)
 
     else:
         return getResult(False, u'不能阅读别人的信息', None)
