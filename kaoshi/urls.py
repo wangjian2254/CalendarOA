@@ -19,8 +19,10 @@ urlpatterns = patterns('kaoshi',
 
                        (r'^updateSubject', 'view_subject.updateSubject'),
                        (r'^getSubjectByKind', 'view_subject.getSubjectByKind'),
+                       (r'^getSubjectAll', 'view_subject.getSubjectAll'),
+                       (r'^getSubjectById', 'view_subject.getSubjectById'),
                        (r'^delSubject', 'view_subject.delSubject'),
-                       (r'^doSubjectOption', 'view_subject.doSubjectOption'),
+                       (r'^delOption', 'view_subject.delOption'),
 
                        (r'^updatePaper', 'view_paper.updatePaper'),
                        (r'^getPaper', 'view_paper.getPaper'),
