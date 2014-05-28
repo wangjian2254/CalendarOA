@@ -26,18 +26,19 @@ def updateSubject(request):
         id = request.REQUEST.get("option_id_%s"%i,None)
         content = request.REQUEST.get("option_content_%s"%i,None)
         is_right = request.REQUEST.get("option_is_right_%s"%i,None)
-        if is_right=='true':
-            is_right=True
-        else:
-            is_right = False
-        if id:
-            option = Option.objects.get(pk=id)
-        else:
-            option = Option()
-        option.content = content
-        option.is_right = is_right
-        option.subject = kind
-        option.save()
+        if id or content or is_right:
+            if is_right=='true':
+                is_right=True
+            else:
+                is_right = False
+            if id:
+                option = Option.objects.get(pk=id)
+            else:
+                option = Option()
+            option.content = content
+            option.is_right = is_right
+            option.subject = kind
+            option.save()
 
 
     return getResult(True,u'保存试题信息成功', kind.pk)
