@@ -72,7 +72,7 @@ def getSubjectById(request):
     id = request.REQUEST.get('id', '')
     if id:
         kind = Subject.objects.get(pk=id)
-        k = {'id':kind.pk,'title':kind.title, 'kinds':[k.name for k in kind.kinds.all()], 'bz':kind.bz, 'accuracy':kind.accuracy}
+        k = {'id':kind.pk,'title':kind.title, 'kinds':[k.pk for k in kind.kinds.all()], 'bz':kind.bz, 'accuracy':kind.accuracy}
         k['options']=[]
         for o in Option.objects.filter(subject=kind):
             k['options'].append({'id':o.pk,'content':o.content,'is_right':o.is_right})
