@@ -18,9 +18,12 @@ def updateSubject(request):
         kindForm = SubjectForm(request.POST, instance = Subject.objects.get(pk=pk))
     else:
         kindForm = SubjectForm(request.POST)
+
     if not kindForm.is_valid():
         msg = kindForm.json_error()
         return getResult(False,msg,None)
+    if not kindForm.instance.accuracy:
+        kindForm.instance.accuracy=0.0
     kind = kindForm.save()
     for i in range(20):
         id = request.REQUEST.get("option_id_%s"%i,None)

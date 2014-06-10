@@ -90,7 +90,7 @@ class PaperResult(models.Model):
     paper = models.ForeignKey(Paper)
     user = models.ForeignKey(User, verbose_name=u'操作人', help_text=u'参与考试的人员')
     editDate = models.DateTimeField(verbose_name=u'答卷时间')
-    accuracy = models.FloatField(verbose_name=u'正确率',help_text=u'试卷正确率')
+    accuracy = models.FloatField(default=0.0, verbose_name=u'正确率',help_text=u'试卷正确率')
     result = models.TextField(blank=True, null=True, verbose_name=u'做题结果，json数据')
 
     def __unicode__(self):
