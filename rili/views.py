@@ -13,7 +13,6 @@ from util.jsonresult import getResult
 from util.loginrequired import client_login_required
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.db import transaction
 
 c = threading.RLock()
 
@@ -133,7 +132,6 @@ def saveUser(request):
     return getResult(True, '修改成功', result.get('result'))
 
 
-@transaction.commit_on_success
 def saveUserFun(request):
     id = request.REQUEST.get('id', '')
     if id:
@@ -296,7 +294,6 @@ def getScheduleByDate(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def updateSchedule(request):
     id = request.REQUEST.get('id', '')
     title = request.REQUEST.get('title', '')
@@ -389,7 +386,6 @@ def updateSchedule(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def delSchedule(request):
     id = request.REQUEST.get('id', '')
     schedule = Schedule.objects.get(pk=id)

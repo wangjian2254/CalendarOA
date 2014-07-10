@@ -2,7 +2,6 @@
 #Date: 11-12-8
 #Time: 下午10:28
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.db.models import Q
 from rili.models import Contacts
 from util.jsonresult import getResult
@@ -21,7 +20,6 @@ def getContacts(request):
     return getResult(True, '',l)
 
 @client_login_required
-@transaction.commit_on_success
 def joinContacts(request):
     usernamelist = request.REQUEST.getlist('usernames')
     do = request.REQUEST.get('do','')

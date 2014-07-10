@@ -3,7 +3,6 @@
 #Date: 14-3-28
 #Time: 上午6:43
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.db.models import Q
 from rili.models import Group, RiLiWarning, Schedule
 from util.jsonresult import getResult
@@ -43,7 +42,6 @@ def getMyGroup(request):
     return getResult(True, '', l)
 
 @client_login_required
-@transaction.commit_on_success
 def updateGroup(request):
     id = request.REQUEST.get('id','')
     name = request.REQUEST.get('name','')
@@ -75,7 +73,6 @@ def updateGroup(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def joinGroup(request):
     id = request.REQUEST.get('id','')
     username = request.REQUEST.get('username','')
@@ -104,7 +101,6 @@ def joinGroup(request):
         return getResult(False,u'操作不正确',id)
 
 @client_login_required
-@transaction.commit_on_success
 def delGroup(request):
     id = request.REQUEST.get('id','')
 

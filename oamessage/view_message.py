@@ -2,7 +2,6 @@
 #Date: 11-12-8
 #Time: 下午10:28
 from django.db import transaction
-
 from oamessage.forms import MessageForm
 from models import OAMessage, ReceiveMessage
 from util.jsonresult import getResult
@@ -30,7 +29,6 @@ def getUnReadCount(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def updateMessage(request):
     '''
     修改、新建 信息，是保存为草稿，还是直接发送
@@ -54,10 +52,9 @@ def updateMessage(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def flagMessage(request):
     try:
-        with transaction.commit_on_success():
+        with transaction.atomic():
             pk = request.REQUEST.get('id', '')
             read = request.REQUEST.get('do', 'false')
             if read == 'false':

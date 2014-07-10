@@ -76,7 +76,7 @@ def zentaoTaskFun(sessiondata,person):
     #         deleteids.append(task.get('id'))
     if not result:
         return
-    with transaction.commit_on_success():
+    with transaction.atomic():
         group = Group.objects.filter(author=person.user,flag='zentao')[:1]
         if 0==len(group):
             group = Group()
@@ -196,7 +196,7 @@ def zentaoBugFun(sessiondata,person):
     #         deleteids.append(task.get('id'))
     if not result:
         return
-    with transaction.commit_on_success():
+    with transaction.atomic():
         for task in result:
             with c:
                 if not task.get('lastEditedBy'):
@@ -272,7 +272,7 @@ def zentaoStatusTask(request):
                 if not sessiondata:
                     continue
                 for task in Task.objects.filter(author=person.user,status=False,flag='Task').order_by('lastUpdateTime'):
-                    with transaction.commit_on_success():
+                    with transaction.atomic():
                         tome=urllib.urlopen('%s/index.php?m=task&f=view&taskID=%s&t=json%s'%(ZENTAO_HOST,task.flagid,sessiondata)).read()
                         item=getObjFromData(tome)
                         if item.get('task').get('status')=='closed':
@@ -299,7 +299,7 @@ def zentaoStatusBug(request):
                 if not sessiondata:
                     continue
                 for task in Task.objects.filter(author=person.user,status=False,flag='Bug').order_by('lastUpdateTime'):
-                    with transaction.commit_on_success():
+                    with transaction.atomic():
                         tome=urllib.urlopen('%s/index.php?m=bug&f=view&bugID=%s&t=json%s'%(ZENTAO_HOST,task.flagid,sessiondata)).read()
                         item=getObjFromData(tome)
                         if item.get('bug').get('status')=='closed':

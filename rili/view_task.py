@@ -5,7 +5,6 @@
 import datetime
 import threading
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.db.models import Q
 from rili.models import Task, RiLiWarning
 from rili.warningtools import adjustRiLiWarning
@@ -71,7 +70,6 @@ def getTaskByStatus(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def updateTask(request):
     id = request.REQUEST.get('id', '')
     title = request.REQUEST.get('title', '')
@@ -135,7 +133,6 @@ def updateTask(request):
 
 
 @client_login_required
-@transaction.commit_on_success
 def delTask(request):
     id = request.REQUEST.get('id', '')
     schedule = Task.objects.get(pk=id)
@@ -143,7 +140,6 @@ def delTask(request):
     return getResult(True, u'删除成功', id)
 
 @client_login_required
-@transaction.commit_on_success
 def doTask(request):
     id = request.REQUEST.get('id', '')
     do = request.REQUEST.get('do', '')

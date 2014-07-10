@@ -2,7 +2,6 @@
 #author:u'王健'
 #Date: 14-5-15
 #Time: 下午8:43
-from django.db import transaction
 from kaoshi.forms import KindForm
 from kaoshi.models import Kind
 from util.jsonresult import getResult
@@ -32,7 +31,6 @@ def getAllKind(request):
     return getResult(True, u'获取试题分类成功', kindlist)
 
 @client_login_required
-@transaction.commit_on_success
 def updateKind(request):
     pk = request.REQUEST.get('id', '')
     if pk:
