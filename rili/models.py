@@ -182,6 +182,7 @@ class Schedule(ModelWithHistory):
 
         @staticmethod
         def repeat_type_change_message(instence, name, oldvalue, value):
+            o=''
             for code, n in REPEAT_TYPE:
                 if oldvalue[name] == code:
                     o = n
