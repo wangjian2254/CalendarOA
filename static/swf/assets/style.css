@@ -1,0 +1,47 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+s|Application{
+	
+}
+
+.textStyle1{
+	color:#555555;
+	fontSize:12;
+}
+
+.textStyle2{
+	color:#6a7987;
+	fontSize:12;
+}
+
+.textStyle3{
+	color:#405d6a;
+	fontSize:12;
+}
+
+.menuBtn{
+	fontSize:14;
+	skin-class:ClassReference('skins.menuBtnSkin');
+}
+
+s|Form s|FormItem{
+	textAlign:right;
+}
+
+s|Form s|FormItem s|TextInput{
+	textAlign:left;
+}
+
+s|Form s|FormItem s|DropDownList{
+	textAlign:left;
+}
+
+s|Form s|FormItem s|TextArea{
+	textAlign:left;
+}
+
+s|Form s|FormItem mx|DateField{
+	textAlign:left;
+}

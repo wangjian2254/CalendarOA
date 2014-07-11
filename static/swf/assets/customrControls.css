@@ -1,0 +1,28 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+.fliterComboBox{
+	arrowButtonWidth: 18;
+	/*	cornerRadius: 5; */
+	/*	disabledSkin: null 
+	downSkin: null */
+	dropdownStyleName: "comboDropdown";
+	/*	editableDisabledSkin: null
+	editableDownSkin: null
+	editableOverSkin: null */
+	editableSkin: ClassReference("mx.skins.spark.EditableComboBoxSkin");
+	/*	editableUpSkin: null 
+	fontWeight: "bold"; */
+	leading: 0;
+	/*	overSkin: null */
+	paddingBottom: -2;
+	paddingLeft: 5;
+	paddingRight: 5;
+	paddingTop: -1;
+	skin: ClassReference("mx.skins.spark.ComboBoxSkin");
+	/*	upSkin: null */
+}
+global
+{
+	font-weight: normal;
+}
