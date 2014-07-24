@@ -185,7 +185,7 @@ def saveUserFun(request):
     person.zentao_account = request.REQUEST.get('zentao_account', '')
     person.zentao_password = request.REQUEST.get('zentao_password', '')
     person.save()
-    regAMB(person)
+    # regAMB(person)
     return {'success': True, 'message': '',
             'result': {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
                        'isaction': user.is_active, 'id': user.pk}}
