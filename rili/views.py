@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
-from rili.models import Schedule,  Group,  Person
+from rili.models import Schedule,    Person
 from rili.szht_amb import regAMB
 from rili.warningtools import  dateisright, dateinrange
 from util.jsonresult import getResult
@@ -58,138 +58,6 @@ def menu(request):
         '''
 
     return HttpResponse(menuxml)
-
-
-def logout(request):
-    auth_logout(request)
-    return getResult(True, '')
-
-
-def login(request):
-    username = request.REQUEST.get('username')
-    if username:
-        userlist = User.objects.filter(username=username)[:1]
-        if len(userlist) > 0:
-            user = userlist[0]
-            if not user.is_active:
-                return getResult(False, u'用户已经停止使用。')
-    form = AuthenticationForm(data=request.POST)
-    if form.is_valid():
-
-
-        # Okay, security checks complete. Log the user in.
-        auth_login(request, form.get_user())
-
-        if request.session.test_cookie_worked():
-            request.session.delete_test_cookie()
-
-        return getResult(True, u'登录成功',request.session.keys())
-    else:
-        return getResult(False, u'用户名密码错误',request.session.session_key,500)
-
-
-
-
-def remotelogin(request):
-    username = request.REQUEST.get('username')
-    if username:
-        userlist = User.objects.filter(username=username)[:1]
-        if len(userlist) > 0:
-            user = userlist[0]
-            if not user.is_active:
-                return getResult(False, u'用户已经停止使用。')
-    form = AuthenticationForm(data=request.POST)
-    if form.is_valid():
-
-
-        # Okay, security checks complete. Log the user in.
-        auth_login(request, form.get_user())
-
-        if request.session.test_cookie_worked():
-            request.session.delete_test_cookie()
-
-        return getResult(True, u'登录成功')
-    else:
-        raise Http404
-
-
-def regUser(request):
-    result = saveUserFun(request)
-    if result.get('success'):
-        form = AuthenticationForm(data=request.POST)
-        form.is_valid()
-        auth_login(request, form.get_user())
-
-        if request.session.test_cookie_worked():
-            request.session.delete_test_cookie()
-        return getResult(True, '注册成功', None)
-    else:
-        return getResult(False, result.get('message'), None)
-
-
-def saveUser(request):
-    result = saveUserFun(request)
-    return getResult(True, '修改成功', result.get('result'))
-
-
-def saveUserFun(request):
-    id = request.REQUEST.get('id', '')
-    if id:
-        user = User.objects.get(pk=id)
-    else:
-        user = User()
-        user.set_password('111111')
-        user.username = request.REQUEST.get('username', '')
-        user.first_name = request.REQUEST.get('truename', u'游客')
-        if not user.username or User.objects.filter(username=user.username).count() > 0:
-            return {'success': True, 'message': u'用户名已经存在', 'result': None}
-        user.save()
-        if 0 == Group.objects.filter(author=user).count():
-            g = Group()
-            g.author = user
-            g.flag = 'default'
-            g.color = 0xeaeaea
-            g.name = u'%s的日程' % request.REQUEST.get('truename', user.username)
-            g.save()
-    is_active = request.REQUEST.get('isaction', '')
-    if is_active:
-        if is_active == 'true':
-            user.is_active = True
-        else:
-            user.is_active = False
-    is_staff = request.REQUEST.get('ismanager', '')
-    if is_staff:
-        if is_staff == 'true':
-            user.is_staff = True
-        else:
-            user.is_staff = False
-    user.first_name = request.REQUEST.get('truename', u'游客')
-    if request.REQUEST.has_key('password'):
-        user.set_password(request.REQUEST.get('password'))
-    user.save()
-    email = request.REQUEST.get('email', '')
-    if email:
-        try:
-            user.email = email
-            user.save()
-        except:
-            pass
-    if not hasattr(user, 'person'):
-        person = Person()
-        person.user = user
-    else:
-        person = user.person
-
-    person.rtxnum = request.REQUEST.get('rtx', '')
-    person.telphone = request.REQUEST.get('sms', '')
-    person.zentao_account = request.REQUEST.get('zentao_account', '')
-    person.zentao_password = request.REQUEST.get('zentao_password', '')
-    person.save()
-    # regAMB(person)
-    return {'success': True, 'message': '',
-            'result': {'username': user.username, 'truename': user.first_name, 'ismanager': user.is_staff,
-                       'isaction': user.is_active, 'id': user.pk}}
-
 
 def allmanager(request):
     uq = User.objects.filter(is_staff=True).filter(is_active=True)

@@ -1,21 +1,41 @@
 #coding=utf-8
 #Date: 11-12-8
 #Time: 下午10:28
+__author__ = u'王健'
+
 from django.core.serializers import deserialize, serialize
 from django.db.models.query import QuerySet
 from django.db import models
 from django.utils import simplejson
-
-__author__ = u'王健'
 import json
 from django.http import HttpResponse
 from django.core.cache import cache
 
-__author__ = u'王健'
+
+
+
+
+def getErrorFormResult(form):
+    msg = form.json_error()
+    return getResult(False, msg, None)
+
+
+def getCacheResult(cache_name):
+    cache_result = cache.get(cache_name)
+    if cache_result:
+        return HttpResponse(cache_result)
+    else:
+        return
 
 def getResult(success,message,result=None,status_code=200,cachename=None):
     '''
     200 正常返回 code
+    201 用户名已经具有
+    202 需要验证邮箱
+    400 组织余额不足，需要充值后继续使用
+    401 用户禁止使用
+    402 用户离开了当前组织
+    403 需要先选择当前的组织
     404 登录过期，需要重新登录
     '''
     map={'success':success,'message':message, 'status_code':status_code}
@@ -26,11 +46,33 @@ def getResult(success,message,result=None,status_code=200,cachename=None):
         cache.set(cachename,jsonstr,3600*24*31)
     return HttpResponse(jsonstr)
 
+
 class MyEncoder(simplejson.JSONEncoder):
     """ 继承自simplejson的编码基类，用于处理复杂类型的编码
     """
     @staticmethod
-    def default(obj):
+    def default( obj):
+        if isinstance(obj,QuerySet):
+            l = []
+            for o in MyEncoder.obj2json(obj):
+                o.update(o['fields'])
+                o['id'] = o['pk']
+                del o['fields']
+                l.append(o)
+            return l
+        if isinstance(obj,models.Model):
+            o = MyEncoder.obj2json(obj)
+            o.update(o['fields'])
+            o['id'] = o['pk']
+            del o['fields']
+            return o
+        if hasattr(obj, 'isoformat'):
+            #处理日期类型
+            return obj.isoformat()
+        return None
+
+    @staticmethod
+    def obj2json(obj):
         if isinstance(obj,QuerySet):
             """ Queryset实例
             直接使用Django内置的序列化工具进行序列化

@@ -3,7 +3,9 @@
 #Email:wangjian2254@gmail.com
 import logging
 import sys
+from django.conf import settings
 from util.jsonresult import getResult
+
 
 __author__ = u'王健'
 
@@ -13,7 +15,7 @@ class ExceptionMiddleware(object):
     def process_exception(self, request,e):
         import time
         errorid = time.time()
-        log=logging.getLogger('fk')
+        log=logging.getLogger()
         s = [u'错误码:%s'%errorid]
         s.append(u'%s:%s'%(request.method,request.path))
         user = getattr(request, 'user', None)
@@ -33,5 +35,10 @@ class ExceptionMiddleware(object):
             name = co.co_name
             s.append(u'File "%s", line %d, in %s' % (filename, lineno, name))
             tb = tb.tb_next
-        log.error('\n    '.join(s))
-        return getResult(False,u'服务器端错误,请联系管理员,错误标记码：%s'%errorid)
+        if not settings.DEBUG:
+            log.error('\n    '.join(s))
+            return getResult(False,u'服务器端错误,请联系管理员,错误标记码：%s'%errorid)
+        else:
+            m = '\n    '.join(s)
+            log.error(m)
+            return getResult(False,u'服务器端错误,错误如下：\n%s'%(m))

@@ -29,9 +29,11 @@ DATABASES = {
           'PASSWORD': '123456',                  # Not used with sqlite3.
           'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
           'PORT': '3306',                      # Set to empty string for default. Not used with sqlite3.
-          'ATOMIC_REQUEST': True,
+          # 'ATOMIC_REQUEST': True,
       }
 }
+
+AUTH_USER_MODEL = "riliusers.LiYuUser"
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
@@ -141,56 +143,57 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'riliusers',
     'rili',
     'oamessage',
     'model_history',
     'kaoshi',
 )
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-     'formatters': {
-        'standard': {
-                'format': '%(levelname)s %(asctime)s %(message)s'
-                },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        },
-         'fk': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':'%sfkerror.log'%STATIC_ROOT,
-            'formatter':'standard',
-        }
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-         'fk':{
-            'handlers': ['fk'],
-            'level': 'ERROR',
-            'propagate': False
-        }
-    }
-}
+# # A sample logging configuration. The only tangible logging
+# # performed by this configuration is to send an email to
+# # the site admins on every HTTP 500 error when DEBUG=False.
+# # See http://docs.djangoproject.com/en/dev/topics/logging for
+# # more details on how to customize your logging configuration.
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': True,
+#      'formatters': {
+#         'standard': {
+#                 'format': '%(levelname)s %(asctime)s %(message)s'
+#                 },
+#     },
+#     'filters': {
+#         'require_debug_false': {
+#             '()': 'django.utils.log.RequireDebugFalse'
+#         }
+#     },
+#     'handlers': {
+#         'mail_admins': {
+#             'level': 'ERROR',
+#             'filters': ['require_debug_false'],
+#             'class': 'django.utils.log.AdminEmailHandler'
+#         },
+#          'fk': {
+#             'level':'DEBUG',
+#             'class':'logging.handlers.RotatingFileHandler',
+#             'filename':'%sfkerror.log'%STATIC_ROOT,
+#             'formatter':'standard',
+#         }
+#     },
+#     'loggers': {
+#         'django.request': {
+#             'handlers': ['mail_admins'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#          'fk':{
+#             'handlers': ['fk'],
+#             'level': 'ERROR',
+#             'propagate': False
+#         }
+#     }
+# }
 
 
 EMAIL_HOST = 'smtp.126.com'#                   #邮件smtp服务器
